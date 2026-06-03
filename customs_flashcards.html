@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關務英文學習卡</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F2EC;
+    --surface: #FDFBF7;
+    --border: #D6CFC0;
+    --border-light: #EAE5DA;
+    --text: #1A1714;
+    --text-muted: #6B6459;
+    --text-hint: #9E9590;
+    --accent: #2D5A3D;
+    --accent-light: #E8F2EC;
+    --accent-text: #1E3D2A;
+    --danger: #8B2A1A;
+    --danger-light: #F5EAE7;
+    --gold: #8B6914;
+    --gold-light: #F5EFE0;
+    --card-h: clamp(200px, 30vw, 260px);
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--text);
+    color: var(--bg);
+    padding: 1.5rem 2rem 1.25rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .header-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+  .header-sub {
+    font-size: 0.75rem;
+    opacity: 0.55;
+    letter-spacing: 0.12em;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 2rem;
+    padding: 4px 14px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-num.green { color: var(--accent); }
+  .stat-num.red   { color: var(--danger); }
+  .stat-num.gray  { color: var(--text); }
+  .stat-label { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; }
+
+  /* ── Progress ── */
+  .progress-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;
+  }
+  .progress-track {
+    flex: 1; height: 4px; background: var(--border-light); border-radius: 99px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 99px;
+    transition: width 0.4s ease; width: 0%;
+  }
+  .progress-label {
+    font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap;
+  }
+
+  /* ── Mode tabs ── */
+  .mode-tabs {
+    display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap;
+  }
+  .mode-tab {
+    padding: 6px 16px; border-radius: 99px;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+  }
+  .mode-tab:hover { background: var(--surface); color: var(--text); }
+  .mode-tab.active {
+    background: var(--text); color: var(--bg);
+    border-color: var(--text);
+  }
+
+  /* ── Flashcard ── */
+  .card-scene { perspective: 1000px; margin-bottom: 1.25rem; }
+  .card-inner {
+    position: relative;
+    width: 100%; height: var(--card-h);
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+    cursor: pointer;
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 14px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem 1.75rem;
+    border: 1px solid var(--border);
+  }
+  .card-front {
+    background: var(--surface);
+  }
+  .card-back {
+    background: var(--accent);
+    transform: rotateY(180deg);
+    border-color: var(--accent);
+  }
+  .card-tag {
+    position: absolute; top: 16px; left: 20px;
+    font-size: 0.65rem; letter-spacing: 0.14em;
+    font-weight: 500; text-transform: uppercase;
+  }
+  .card-front .card-tag { color: var(--text-hint); }
+  .card-back .card-tag { color: rgba(255,255,255,0.5); }
+  .card-question {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(1rem, 3.5vw, 1.25rem);
+    font-weight: 600; text-align: center;
+    line-height: 1.6; color: var(--text);
+  }
+  .card-answer {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    font-weight: 500; text-align: center;
+    line-height: 1.6; color: #fff;
+    letter-spacing: 0.02em;
+  }
+  .card-hint {
+    position: absolute; bottom: 16px;
+    font-size: 0.7rem; letter-spacing: 0.1em;
+    color: var(--text-hint);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .card-hint svg { width: 12px; height: 12px; opacity: 0.5; }
+
+  /* ── Buttons ── */
+  .btn-row {
+    display: flex; gap: 10px; justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+  .btn {
+    padding: 10px 22px; border-radius: 8px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--text);
+  }
+  .btn:hover { background: var(--bg); }
+  .btn:active { transform: scale(0.97); }
+  .btn-know {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    background: var(--accent-light);
+  }
+  .btn-know:hover { background: #d4eadc; }
+  .btn-dontknow {
+    border-color: #c0604a;
+    color: var(--danger);
+    background: var(--danger-light);
+  }
+  .btn-dontknow:hover { background: #eeddd9; }
+  .btn-primary {
+    background: var(--text); color: var(--bg); border-color: var(--text);
+  }
+  .btn-primary:hover { background: #333; }
+
+  /* ── Done screen ── */
+  #done-view { display: none; }
+  .done-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .done-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .done-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.4rem; font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .done-sub {
+    font-size: 0.9rem; color: var(--text-muted);
+    line-height: 1.8; margin-bottom: 1.5rem;
+  }
+  .done-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 3.5rem; font-weight: 500;
+    color: var(--accent); line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+  .done-btn-row {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+
+  /* ── Category badges ── */
+  .cat-tags {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .cat-tag {
+    padding: 4px 12px; border-radius: 99px;
+    font-size: 0.72rem; letter-spacing: 0.05em;
+    border: 1px solid var(--border-light);
+    background: var(--surface); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .cat-tag:hover { border-color: var(--border); color: var(--text); }
+  .cat-tag.active {
+    background: var(--gold-light);
+    border-color: #c8a84b;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  @media (max-width: 480px) {
+    header { padding: 1.25rem 1rem 1rem; }
+    .container { padding: 1.25rem 1rem 3rem; }
+    .btn { padding: 9px 16px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">關務英文學習卡</div>
+    <div class="header-sub">CUSTOMS ENGLISH VOCABULARY</div>
+  </div>
+  <div class="header-badge" id="hdr-badge">75 張單字卡</div>
+</header>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num green" id="s-know">0</div>
+      <div class="stat-label">已掌握</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num red" id="s-unk">0</div>
+      <div class="stat-label">待加強</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num gray" id="s-left">75</div>
+      <div class="stat-label">未作答</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+    <span class="progress-label" id="prog-label">1 / 75</span>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('all')" id="m-all">全部</button>
+    <button class="mode-tab" onclick="setMode('unknown')" id="m-unk">待加強 (<span id="unk-n">0</span>)</button>
+    <button class="mode-tab" onclick="shuffle()" id="m-shuf">🔀 隨機</button>
+  </div>
+
+  <!-- Main view -->
+  <div id="main-view">
+    <!-- Card -->
+    <div class="card-scene">
+      <div class="card-inner" id="card" onclick="flip()" role="button" tabindex="0" aria-label="點擊翻牌">
+        <div class="card-face card-front">
+          <span class="card-tag">中文題目</span>
+          <div class="card-question" id="q-text"></div>
+          <div class="card-hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            點擊翻牌查看英文
+          </div>
+        </div>
+        <div class="card-face card-back">
+          <span class="card-tag">英文答案</span>
+          <div class="card-answer" id="a-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Answer buttons -->
+    <div class="btn-row" id="ans-btns" style="display:none">
+      <button class="btn btn-dontknow" onclick="answer(false)">✕ 還不熟</button>
+      <button class="btn btn-know" onclick="answer(true)">✓ 已掌握</button>
+    </div>
+    <div class="btn-row" id="flip-row">
+      <button class="btn btn-primary" onclick="flip()">翻牌看答案</button>
+      <button class="btn" onclick="skip()">跳過 →</button>
+    </div>
+  </div>
+
+  <!-- Done view -->
+  <div id="done-view">
+    <div class="done-card">
+      <div class="done-icon" id="done-icon">🏆</div>
+      <div class="done-pct" id="done-pct">0%</div>
+      <div class="done-title" id="done-title">這輪完成！</div>
+      <div class="done-sub" id="done-sub"></div>
+      <div class="done-btn-row">
+        <button class="btn btn-primary" onclick="restart('all')">↺ 重新開始全部</button>
+        <button class="btn btn-dontknow" onclick="restart('unk')" id="retry-btn">再練待加強</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const ALL = [
+  ["「無障礙通關環境」的英文詞彙為何？","A Barrier-free Customs Clearance Environment"],
+  ["Ad Valorem Duty 指的是哪一種稅制？","從價稅"],
+  ["「行政救濟」的英文對應詞彙為何？","Administrative Remedy"],
+  ["「補稅金額」的英文稱為？","Amount of Duty to be Recovered (or Made Up)"],
+  ["「貨品暫准通關證」在國際上通常簡稱為？","A.T.A. Carnet"],
+  ["Istanbul Convention 的中文名稱為何？","伊斯坦堡公約"],
+  ["「提貨單」的英文詞彙為何？","Bill of Lading"],
+  ["「原產地證明書」的英文詞彙為何？","Certificate of Origin"],
+  ["Consignee 與 Consignor 分別代表什麼角色？","Consignee 為收貨人，Consignor 為發貨人"],
+  ["「按月彙總繳納稅費」的完整英文表述為何？","Consolidated Payment of Duties and Charges on a Monthly Basis"],
+  ["「關稅法」及「施行細則」的英文分別為何？","Customs Act 及 Enforcement Rules of the Customs Act"],
+  ["Customs Broker 在中文關務環境中是指什麼？","報關行（或報關人員）"],
+  ["「關稅完稅價格」的英文詞彙為何？","Customs Taxable Value"],
+  ["De Minimis Shipment Value 是指什麼？","微量價值（低於此價值通常免稅）"],
+  ["「先放後稅」的通關方式，英文稱為？","Post-release Duty Payment"],
+  ["EDI 在通關業務中代表什麼技術？","電子資料交換 (Electronic Data Interchange)"],
+  ["「船邊驗放」與「倉庫驗放」的英文分別為何？","Cargo Examination and Release Alongside the Vessel / at the Warehouse"],
+  ["HS Code 的全稱為何？","The Harmonized Commodity Description and Coding System"],
+  ["「菸酒稅」與「健康福利捐」的英文分別為何？","Tobacco and Alcohol Tax 及 Health and Welfare Surcharge"],
+  ["「進口貨物艙單」的英文詞彙為何？","Import Cargo Manifest"],
+  ["Inbound Vessel 指的是什麼？","進口船隻"],
+  ["「電信管制射頻器材進口許可證」的英文對應為何？","Permit for the Import of Controlled Telecommunications Radio-frequency Apparatus"],
+  ["「通關方式」的英文對應詞彙為何？","Mode of Clearance"],
+  ["Customs Office of Departure 指的是哪裡的海關？","起運地海關"],
+  ["「從量」與「從價」作為課稅基礎的英文分別為何？","On a Specific Basis 與 On an Ad Valorem Basis"],
+  ["「裝箱單」的英文詞彙為何？","Packing List"],
+  ["「商港服務費」的英文詞彙為何？","Commercial Port Dues"],
+  ["「復運出口」與「復運進口」的英文分別為何？","Re-export 與 Re-import"],
+  ["「實名認證」的英文為？","Real Name Authentication"],
+  ["「無商業價值樣品」的英文縮寫為何？","Samples of No Commercial Value (N.C.V.)"],
+  ["關稅稅則中的「類、章、節、目」英文分別為何？","Sections, Chapters, Headings, Sub-headings"],
+  ["「關稅配額」的英文詞彙為何？","Tariff Quotas"],
+  ["「三角貿易」的英文詞彙為何？","Triangular Trade"],
+  ["「加值型及非加值型營業稅法」的英文名稱為何？","Value-added and Non-value-added Business Tax Act"],
+  ["「進口貨物稅則預審」的英文詞彙為何？","Advance Ruling for Tariff Classification of Imported Goods"],
+  ["「優質企業認證」在關務中稱為？","Certification of Authorized Economic Operators (AEO)"],
+  ["「查緝走私」的英文為何？","Anti-smuggling Operation (Interdiction)"],
+  ["「沒入」在關務處分中的英文為何？","Confiscation / Forfeiture"],
+  ["「海關緝私條例」的英文詞彙為何？","Customs Anti-Smuggling Act"],
+  ["「紅綠線通關制度」的英文名稱為何？","Red/Green Line Passenger Clearance System"],
+  ["「瀕臨絕種動植物」的英文詞彙為何？","Endangered Animals, Plants, or Species"],
+  ["「智慧財產權」及其縮寫為何？","Intellectual Property Rights (IPR)"],
+  ["「緝獲」在查緝業務中的英文為何？","Seizure"],
+  ["「後送行李」的英文詞彙為何？","Unaccompanied Baggage / Luggage"],
+  ["「戰略性高科技貨品」的英文詞彙為何？","Strategic High-tech Commodities"],
+  ["「計算價格」的英文詞彙為何？","Computed Value"],
+  ["Customs Value Declaration Form 的中文名稱為何？","貨價申報書"],
+  ["「權利金及報酬」在估價時稱為？","Royalties and License Fees"],
+  ["Transaction Value of Identical Goods 代表什麼意思？","同樣貨物之交易價格"],
+  ["「事後稽核制度」的英文詞彙為何？","Post-clearance Audit System"],
+  ["「預估發票」在貿易與驗估中稱為？","Pro-forma Invoice"],
+  ["「自主管理」的英文詞彙為何？","Autonomous Management"],
+  ["「除帳」在保稅帳務處理中的英文為何？","Account Write-off; De-booking; Deduction from Stock Account"],
+  ["「科技產業園區」的英文名稱為何？","Technology Industrial Park"],
+  ["「自由貿易港區」的英文名稱為何？","Free Trade Zone"],
+  ["「下腳」（生產過程廢料）英文稱為？","Scraps"],
+  ["Under Supervision (and Control) of Customs 指的是什麼狀態？","海關監管"],
+  ["「退稅」在出口退稅業務中常用哪個英文詞彙？","Duty Drawback (或 Duty Refund / Tax Refund)"],
+  ["「反傾銷稅」的英文詞彙為何？","Anti-dumping Duty"],
+  ["CIF (Cost, Insurance, and Freight) 的中文名稱為何？","到岸價格 / 起岸價格"],
+  ["FOB (Free on Board) Value 的中文名稱為何？","離岸價格（船上交貨價格）"],
+  ["「落日檢討」在反傾銷法規中的英文為何？","Sunset Review"],
+  ["「平衡稅」與「補貼」的英文分別為何？","Countervailing Duty 與 Subsidy"],
+  ["Bogor Goals 是 APEC 的重要里程碑，中文稱為？","茂物目標"],
+  ["SCCP 在 APEC 組織中代表什麼委員會？","Sub-committee on Customs Procedures (海關程序小組)"],
+  ["「最惠國待遇」的英文及其縮寫為何？","Most-Favored-Nation Treatment (MFN)"],
+  ["「京都公約」的完整名稱為何？","Kyoto Convention (The International Convention on the Simplification and Harmonization of Customs Procedures)"],
+  ["WCO SAFE 代表什麼架構？","WCO 全球貿易安全與便捷標準架構"],
+  ["「貿易便捷化協定」的英文縮寫為何？","TFA (Trade Facilitation Agreement)"],
+  ["CMAA 在國際關務合作中代表什麼協定？","Customs Mutual Assistance Agreement (關務互助協定)"],
+  ["「單一窗口」的英文詞彙為何？","Single Window"],
+  ["「境內關外」的英文為何？","Within National Territory but Outside Customs Territory"],
+  ["CPT Single Window 指的是什麼？","關港貿單一窗口"],
+  ["「無紙化通關」的英文詞彙為何？","Paperless Measures on Import/Export Clearance"],
+  ["Time Release Study (TRS) 在關務統計中是指什麼？","廣義通關時間統計"]
+];
+
+let deck = [...ALL];
+let idx = 0;
+let known = new Set();
+let unknown = new Set();
+let isFlipped = false;
+let currentMode = 'all';
+
+function showCard() {
+  if (idx >= deck.length) { showDone(); return; }
+  document.getElementById('q-text').textContent = deck[idx][0];
+  document.getElementById('a-text').textContent = deck[idx][1];
+  const card = document.getElementById('card');
+  card.classList.remove('flipped');
+  isFlipped = false;
+  document.getElementById('ans-btns').style.display = 'none';
+  document.getElementById('flip-row').style.display = 'flex';
+  updateStats();
+}
+
+function flip() {
+  if (isFlipped) return;
+  isFlipped = true;
+  document.getElementById('card').classList.add('flipped');
+  setTimeout(() => {
+    document.getElementById('flip-row').style.display = 'none';
+    document.getElementById('ans-btns').style.display = 'flex';
+  }, 280);
+}
+
+function answer(k) {
+  const orig = ALL.indexOf(deck[idx]);
+  if (orig >= 0) {
+    if (k) { known.add(orig); unknown.delete(orig); }
+    else   { unknown.add(orig); known.delete(orig); }
+  }
+  idx++;
+  document.getElementById('unk-n').textContent = unknown.size;
+  showCard();
+}
+
+function skip() { idx++; showCard(); }
+
+function updateStats() {
+  document.getElementById('s-know').textContent = known.size;
+  document.getElementById('s-unk').textContent = unknown.size;
+  document.getElementById('s-left').textContent = ALL.length - known.size - unknown.size;
+  const total = deck.length;
+  const pct = total ? Math.round((idx / total) * 100) : 0;
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = Math.min(idx + 1, total) + ' / ' + total;
+  document.getElementById('hdr-badge').textContent = deck.length + ' 張單字卡';
+}
+
+function setMode(m) {
+  currentMode = m;
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  if (m === 'all') {
+    deck = [...ALL];
+    document.getElementById('m-all').classList.add('active');
+  } else if (m === 'unknown') {
+    const unk = ALL.filter((_, i) => unknown.has(i));
+    if (!unk.length) { alert('目前沒有待加強的單字，先完成一輪練習吧！'); return; }
+    deck = unk;
+    document.getElementById('m-unk').classList.add('active');
+  }
+  idx = 0; isFlipped = false;
+  document.getElementById('main-view').style.display = 'block';
+  document.getElementById('done-view').style.display = 'none';
+  showCard();
+}
+
+function shuffle() {
+  deck = [...ALL].sort(() => Math.random() - 0.5);
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('m-shuf').classList.add('active');
+  idx = 0; isFlipped = false;
+  document.getElementById('main-view').style.display = 'block';
+  document.getElementById('done-view').style.display = 'none';
+  showCard();
+}
+
+function showDone() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('done-view').style.display = 'block';
+  const k = known.size, u = unknown.size;
+  const pct = Math.round((k / ALL.length) * 100);
+  document.getElementById('done-pct').textContent = pct + '%';
+  document.getElementById('done-icon').textContent = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '💪';
+  document.getElementById('done-title').textContent = pct >= 80 ? '表現優秀！' : pct >= 50 ? '繼續努力！' : '加油，再練一次！';
+  document.getElementById('done-sub').innerHTML =
+    `已掌握 <strong>${k}</strong> 張・待加強 <strong>${u}</strong> 張<br>共 ${ALL.length} 張・掌握率`;
+  document.getElementById('retry-btn').style.display = u ? 'flex' : 'none';
+}
+
+function restart(t) {
+  document.getElementById('main-view').style.display = 'block';
+  document.getElementById('done-view').style.display = 'none';
+  if (t === 'unk') {
+    const unk = ALL.filter((_, i) => unknown.has(i));
+    deck = unk.length ? unk : [...ALL];
+  } else {
+    deck = [...ALL]; known.clear(); unknown.clear();
+  }
+  idx = 0; isFlipped = false;
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('m-all').classList.add('active');
+  showCard();
+}
+
+// keyboard support
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!isFlipped) flip(); }
+  if (e.key === 'ArrowRight' && isFlipped) answer(true);
+  if (e.key === 'ArrowLeft'  && isFlipped) answer(false);
+  if (e.key === 'ArrowDown') skip();
+});
+
+showCard();
+</script>
+</body>
+</html>
