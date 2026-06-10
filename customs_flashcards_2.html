@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關務英文學習卡（第二冊）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F5F2EC;
+    --surface: #FDFBF7;
+    --border: #D6CFC0;
+    --border-light: #EAE5DA;
+    --text: #1A1714;
+    --text-muted: #6B6459;
+    --text-hint: #9E9590;
+    --accent: #2D5A3D;
+    --accent-light: #E8F2EC;
+    --accent-text: #1E3D2A;
+    --danger: #8B2A1A;
+    --danger-light: #F5EAE7;
+    --card-h: clamp(200px, 30vw, 260px);
+  }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--text); color: var(--bg); padding: 1.5rem 2rem 1.25rem; display: flex; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; }
+  .header-title { font-family: 'Noto Serif TC', serif; font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 700; letter-spacing: 0.05em; line-height: 1; }
+  .header-sub { font-size: 0.75rem; opacity: 0.55; letter-spacing: 0.12em; margin-top: 6px; font-weight: 300; }
+  .header-badge { margin-left: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2rem; padding: 4px 14px; font-size: 0.75rem; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .container { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: 10px; padding: 12px 10px; text-align: center; }
+  .stat-num { font-family: 'DM Mono', monospace; font-size: 1.6rem; font-weight: 500; line-height: 1; margin-bottom: 4px; }
+  .stat-num.green { color: var(--accent); }
+  .stat-num.red   { color: var(--danger); }
+  .stat-num.gray  { color: var(--text); }
+  .stat-label { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; }
+  .progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+  .progress-track { flex: 1; height: 4px; background: var(--border-light); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+  .progress-label { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+  .mode-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .mode-tab { padding: 6px 16px; border-radius: 99px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: 'Noto Sans TC', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+  .mode-tab:hover { background: var(--surface); color: var(--text); }
+  .mode-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .card-scene { perspective: 1000px; margin-bottom: 1.25rem; }
+  .card-inner { position: relative; width: 100%; height: var(--card-h); transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(.4,0,.2,1); cursor: pointer; }
+  .card-inner.flipped { transform: rotateY(180deg); }
+  .card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.75rem; border: 1px solid var(--border); }
+  .card-front { background: var(--surface); }
+  .card-back { background: var(--accent); transform: rotateY(180deg); border-color: var(--accent); }
+  .card-tag { position: absolute; top: 16px; left: 20px; font-size: 0.65rem; letter-spacing: 0.14em; font-weight: 500; text-transform: uppercase; }
+  .card-front .card-tag { color: var(--text-hint); }
+  .card-back .card-tag { color: rgba(255,255,255,0.5); }
+  .card-question { font-family: 'Noto Serif TC', serif; font-size: clamp(0.95rem, 3vw, 1.2rem); font-weight: 600; text-align: center; line-height: 1.6; color: var(--text); }
+  .card-answer { font-family: 'DM Mono', monospace; font-size: clamp(0.82rem, 2.5vw, 1rem); font-weight: 500; text-align: center; line-height: 1.6; color: #fff; letter-spacing: 0.02em; }
+  .card-hint { position: absolute; bottom: 16px; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--text-hint); }
+  .btn-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 1.25rem; }
+  .btn { padding: 10px 22px; border-radius: 8px; font-family: 'Noto Sans TC', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  .btn:hover { background: var(--bg); }
+  .btn:active { transform: scale(0.97); }
+  .btn-know { border-color: var(--accent); color: var(--accent-text); background: var(--accent-light); }
+  .btn-know:hover { background: #d4eadc; }
+  .btn-dontknow { border-color: #c0604a; color: var(--danger); background: var(--danger-light); }
+  .btn-dontknow:hover { background: #eeddd9; }
+  .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn-primary:hover { background: #333; }
+  #done-view { display: none; }
+  .done-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: 14px; padding: 2.5rem 2rem; text-align: center; }
+  .done-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .done-title { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .done-sub { font-size: 0.9rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.5rem; }
+  .done-pct { font-family: 'DM Mono', monospace; font-size: 3.5rem; font-weight: 500; color: var(--accent); line-height: 1; margin-bottom: 0.25rem; }
+  .done-btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  @media (max-width: 480px) { header { padding: 1.25rem 1rem 1rem; } .container { padding: 1.25rem 1rem 3rem; } .btn { padding: 9px 16px; font-size: 0.8rem; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="header-title">關務英文學習卡（第二冊）</div>
+    <div class="header-sub">CUSTOMS ENGLISH VOCABULARY — VOL. 2</div>
+  </div>
+  <div class="header-badge" id="hdr-badge">90 張單字卡</div>
+</header>
+<div class="container">
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-num green" id="s-know">0</div><div class="stat-label">已掌握</div></div>
+    <div class="stat-card"><div class="stat-num red" id="s-unk">0</div><div class="stat-label">待加強</div></div>
+    <div class="stat-card"><div class="stat-num gray" id="s-left">90</div><div class="stat-label">未作答</div></div>
+  </div>
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+    <span class="progress-label" id="prog-label">1 / 90</span>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('all')" id="m-all">全部</button>
+    <button class="mode-tab" onclick="setMode('unknown')" id="m-unk">待加強 (<span id="unk-n">0</span>)</button>
+    <button class="mode-tab" onclick="doShuffle()" id="m-shuf">🔀 隨機</button>
+  </div>
+  <div id="main-view">
+    <div class="card-scene">
+      <div class="card-inner" id="card" onclick="flip()" role="button" tabindex="0" aria-label="點擊翻牌">
+        <div class="card-face card-front">
+          <span class="card-tag">題目</span>
+          <div class="card-question" id="q-text"></div>
+          <div class="card-hint">點擊翻牌查看答案</div>
+        </div>
+        <div class="card-face card-back">
+          <span class="card-tag">答案</span>
+          <div class="card-answer" id="a-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" id="ans-btns" style="display:none">
+      <button class="btn btn-dontknow" onclick="answer(false)">✕ 還不熟</button>
+      <button class="btn btn-know" onclick="answer(true)">✓ 已掌握</button>
+    </div>
+    <div class="btn-row" id="flip-row">
+      <button class="btn btn-primary" onclick="flip()">翻牌看答案</button>
+      <button class="btn" onclick="skip()">跳過 →</button>
+    </div>
+  </div>
+  <div id="done-view">
+    <div class="done-card">
+      <div class="done-icon" id="done-icon">🏆</div>
+      <div class="done-pct" id="done-pct">0%</div>
+      <div class="done-title" id="done-title">這輪完成！</div>
+      <div class="done-sub" id="done-sub"></div>
+      <div class="done-btn-row">
+        <button class="btn btn-primary" onclick="restart('all')">↺ 重新開始全部</button>
+        <button class="btn btn-dontknow" onclick="restart('unk')" id="retry-btn">再練待加強</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const ALL = [
+  ["Contraband 的中文意義為何？","違禁品，指非法進出口的貨物，如麻醉品、武器及仿冒品。"],
+  ["緝毒犬有助於「打擊/取締」毒品走私，此動作的英文片語為何？","Cracking down on"],
+  ["在海關實務中，「艙單」的英文單字為何？","Manifest"],
+  ["「經認證經濟業者」的英文縮寫為何？","AEO (Authorized Economic Operators)"],
+  ["對來自成員國的進口貨物不課徵關稅的協定稱為？","Free Trade Agreement（自由貿易協定）"],
+  ["「卸貨港」的英文名稱為何？","Port of discharge"],
+  ["商標所有權人申請扣押涉嫌侵害商標權物品時，可向海關提供何種擔保？","Security deposit（保證金）"],
+  ["下列何種物品「不得」存放於保稅倉庫？(A)船用補給品 (B)展覽貨物 (C)管制藥品","(C) 管制藥品"],
+  ["入境台灣旅客攜帶供家用及自用的酒類，其免稅數量最高為多少？","1公升"],
+  ["入境台灣旅客攜帶酒類的「最高」限額（含應稅）為多少？","5公升"],
+  ["只有持有何種文件者，方可攜帶醫療用管制藥品入境？","Prescription（處方箋）"],
+  ["具有 AEOS 資格的報關行在通關時可享有何種主要優惠？","Customs may reduce the examination rate for goods（海關得降低貨物查驗率）"],
+  ["ATA 單證冊允許貨物免稅暫時入境的期限最長為多久？","一年"],
+  ["保稅工廠進口供加工成出口品的原料，應享有何種關稅優待？","Exempt from customs duties（免徵關稅）"],
+  ["免稅商店保稅貨物的最長存放期限，自貨物存入自備保稅倉庫之日起計最長為多久？","一年"],
+  ["展覽貨物如於進口之日起多久時間內復出口，得符合關稅豁免資格？","6個月"],
+  ["實施何種制度可讓預定數量的產品以低於正常稅率的稅率進口？","Tariff quota（關稅配額）"],
+  ["雖然位於台灣領土內，但在關稅目的上被視同「關稅領域之外」的區域為何？","Free Trade Zones（自由貿易區）"],
+  ["無商業價值的樣品應具備何種價值特徵，且僅供招攬訂單使用？","Negligible value（微不足道的價值）"],
+  ["在自由貿易區存放超過幾年的貨物，應列印清單供海關查驗？","2年"],
+  ["年滿 20 歲的旅客入境台灣，可攜帶免稅雪茄的數量上限為何？","25支"],
+  ["入境旅客攜帶樣品的完稅價格總計不超過新台幣多少元時，得免徵關稅？","NT$12,000"],
+  ["在海關專業英語中，「see eye to eye」的含義為何？","Agree（看法一致）"],
+  ["Instead of 的中文意義為何？","而非；替代。例如：世界貿易是以規則為基礎而非（instead of）以權力為基礎。"],
+  ["「智慧財產權」的英文縮寫為何？","IPR (Intellectual Property Rights)"],
+  ["若進口貨物的完稅價格無法依交易價格法認定，應「優先」考量哪種估價方法？","Transaction value of identical goods（同一貨物交易價格法）"],
+  ["「從價稅」進口貨物的完稅價格通常以何種價格為計算基礎？","Transaction value（交易價格）"],
+  ["海關估價中的「identical goods」是指在產地、物理特性、商譽及哪方面均相同的貨物？","Quality（品質）"],
+  ["買方作為貨物銷售條件而支付的「權利金」之英文單字為何？","Royalties"],
+  ["海關進口稅則中，代表「目 (heading)」的是幾位數字的代碼？","四位數字"],
+  ["調和制度 (HS) 在國際層面上是用於貨物分類的幾位數命名系統？","六位數"],
+  ["在海關估價層級中，交易價格 (Transaction value) 是最優先還是次要地位？","Primary（最優先）"],
+  ["判定貨物是否有資格享受優惠關稅的關鍵標準為何？","Rules of Origin（原產地規則）"],
+  ["依台灣法規，實質轉型是指貨物加工後其附加價值率超過多少百分比？","35%"],
+  ["HS 號碼的前幾位數字是所有使用該制度的國家的通用識別碼？","6位"],
+  ["進口地海關應於進口申報日起多久期限內完成原產地的認定？","三個月"],
+  ["貿易條件 CIF 中，賣方除了負擔運費外，還必須購買從裝載港至何處的保險？","Destination（目的地）"],
+  ["哪種 Incoterms 2020 條件規定賣方必須辦理進口通關並支付關稅？","DDP (Delivered Duty Paid)"],
+  ["在 FOB 條件下，賣方將貨物置於何處即視為完成交貨義務？","On board the vessel（船舶上）"],
+  ["自由貿易區 (Free Trade Zones) 的主管機關為何？","交通部等港務機關（而非財政部）"],
+  ["快遞貨物通關規定中，單件貨物的毛重限制為多少公斤？","70公斤"],
+  ["依中華民國海關進口稅則，第一欄稅率適用於何種成員進口的貨物？","WTO 成員"],
+  ["若欲進口含有藥物或有毒藥品的化妝品，應向哪個政府機關申請許可？","衛生福利部 (MOHW)"],
+  ["保稅貨物自保稅倉庫提出供「國內消費」時，會產生何種法律義務？","Liability to duties and taxes（納稅義務）"],
+  ["若無法提供修繕費憑證，海關得按貨物完稅價格的多少百分比核估修繕費？","25%"],
+  ["海關對進口貨物的查驗應主要以何種方式辦理？","Selective basis（選擇性方式）"],
+  ["任何走私進口貨物者，處以罰鍰的上限為貨物價值的幾倍？","三倍"],
+  ["「洗錢」的英文單字為何？","Money laundering"],
+  ["「Carbon Border Adjustment Mechanism」的縮寫為何？","CBAM"],
+  ["歐盟進口商須以何種頻率申報進口貨物中的內含碳排放量？","On a quarterly basis（每季）"],
+  ["為規避高額關稅，僅更換產地標籤再出口的行為稱為？","Illicit transshipment（非法洗產地）"],
+  ["當農產品累積進口量超過觸發數量時，海關可加徵額外關稅的措施稱為？","Special safeguard measures（特別防衛措施）"],
+  ["「反傾銷稅」的英文名稱為何？","Anti-dumping duty"],
+  ["若一國發現受補貼的進口品損害國內生產者，最終可課徵何種稅？","Countervailing duties（平衡稅）"],
+  ["海關緝私條例規定，緝私執行的水域範圍為離岸多少海浬以內？","12海浬"],
+  ["針對疑似侵害智慧財產權的物品，海關得執行何種強制行為？","Detain（扣押）或 Seize（查扣）"],
+  ["自非洲豬瘟疫區攜帶豬肉製品入境，首次違規的罰款金額是多少？","新台幣 20萬元（或依最新公告為準）"],
+  ["依《菸害防制法》規定，電子菸被歸類為哪種禁止進口的物品？","Imitation tobacco products（仿菸品）"],
+  ["旅客攜帶新台幣現金入境，超過多少金額時必須向海關申報？","新台幣 100,000元"],
+  ["進口航空鮮活食品或活動物，海關得准予辦理何種特殊的申報程序？","Pre-entry declaration（進口前申報）"],
+  ["「關港貿單一窗口」的英文縮寫為何？","CPT Single Window"],
+  ["報關行受委託辦理業務時，應提示何種法律文件以確立委任關係？","Power of attorney（委任書）"],
+  ["海關事後稽查通知應於進出口放行之翌日起幾個月內發出？","6個月"],
+  ["透過電子資料傳輸辦理的通關程序稱為何種通關？","Automated（自動化）通關"],
+  ["「預先稅則分類裁定」的英文術語為何？","Advance tariff classification ruling"],
+  ["海關人員應對透過 CPT 單一窗口傳輸的所有資訊負何種義務？","Confidential（保密）"],
+  ["運用 X 光影像設備在不卸貨的情況下查驗貨物的技術稱為何種查驗？","Non-intrusive（非侵入式）查驗"],
+  ["Authorized Economic Operator (AEO) 的中文意義為何？","經認證經濟業者，指符合世界海關組織供應鏈安全標準並經海關核准的業者。"],
+  ["若申請預先關稅估價裁定的文件不完整，申請人應於收到通知後幾日內補齊？","三十日"],
+  ["旅客攜帶應稅貨物超過免稅限額時，應經由哪種顏色的通道向海關申報？","Red Channel（紅色通道）"],
+  ["De minimis 的中文意義為何？","微量；最低限額。常用於小額進口免稅的規定中。"],
+  ["關稅法中提到的「同一貨物」英文為何？","Identical goods"],
+  ["關稅法中提到的「同類貨物」英文為何？","Similar goods"],
+  ["「Customs clearance procedure」的中文意義為何？","海關通關程序"],
+  ["Dumping 的中文意義為何？","傾銷，指以低於本國市場或國際市場正常價值的價格出口商品。"],
+  ["海關緝私條例中，沒收物品的英文單字為何？","Confiscation"],
+  ["「貿易便利化」的英文為何？","Trade facilitation"],
+  ["WTO 的全稱為何？","World Trade Organization（世界貿易組織）"],
+  ["WCO 的全稱為何？","World Customs Organization（世界海關組織）"],
+  ["HS Code 的全稱為何？","Harmonized System Code（調和制度編碼）"],
+  ["「完稅價格」的英文術語為何？","Customs value"],
+  ["原產地認定標準中的「Wholly produced」是指什麼？","完全在一國生產（未添加任何非原產材料）"],
+  ["計算產品附加價值率的公式中，分母通常為何？","Export price of product（產品出口價格）"],
+  ["在 Incoterms 2020 中，FAS 代表什麼？","Free Alongside Ship（船邊交貨）"],
+  ["「Provisional anti-dumping duty」是指何種性質的反傾銷稅？","臨時性反傾銷稅"],
+  ["「Illicit trade」的中文意義為何？","非法貿易"],
+  ["「Reciprocal treatment」在關稅法中代表何種待遇？","互惠待遇"],
+  ["快遞貨物類別中，不存在哪種編號（X2, X3, X4, X5）？","X5"],
+  ["旅客在旅途中合理需要供個人使用的物品稱為？","Personal effects（個人隨身物品）"],
+  ["為防止外來疾病傳入，進口動植物必須接受的程序稱為？","Quarantine（檢疫）"]
+];
+
+let deck = [...ALL];
+let idx = 0;
+let known = new Set();
+let unknown = new Set();
+let isFlipped = false;
+
+function showCard() {
+  if (idx >= deck.length) { showDone(); return; }
+  document.getElementById('q-text').textContent = deck[idx][0];
+  document.getElementById('a-text').textContent = deck[idx][1];
+  document.getElementById('card').classList.remove('flipped');
+  isFlipped = false;
+  document.getElementById('ans-btns').style.display = 'none';
+  document.getElementById('flip-row').style.display = 'flex';
+  updateStats();
+}
+
+function flip() {
+  if (isFlipped) return;
+  isFlipped = true;
+  document.getElementById('card').classList.add('flipped');
+  setTimeout(() => {
+    document.getElementById('flip-row').style.display = 'none';
+    document.getElementById('ans-btns').style.display = 'flex';
+  }, 280);
+}
+
+function answer(k) {
+  const orig = ALL.indexOf(deck[idx]);
+  if (orig >= 0) {
+    if (k) { known.add(orig); unknown.delete(orig); }
+    else   { unknown.add(orig); known.delete(orig); }
+  }
+  idx++;
+  document.getElementById('unk-n').textContent = unknown.size;
+  showCard();
+}
+
+function skip() { idx++; showCard(); }
+
+function updateStats() {
+  document.getElementById('s-know').textContent = known.size;
+  document.getElementById('s-unk').textContent = unknown.size;
+  document.getElementById('s-left').textContent = ALL.length - known.size - unknown.size;
+  const total = deck.length;
+  const pct = total ? Math.round((idx / total) * 100) : 0;
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = Math.min(idx + 1, total) + ' / ' + total;
+  document.getElementById('hdr-badge').textContent = deck.length + ' 張單字卡';
+}
+
+function setMode(m) {
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  if (m === 'all') {
+    deck = [...ALL];
+    document.getElementById('m-all').classList.add('active');
+  } else if (m === 'unknown') {
+    const unk = ALL.filter((_, i) => unknown.has(i));
+    if (!unk.length) { alert('目前沒有待加強的單字，先完成一輪練習吧！'); return; }
+    deck = unk;
+    document.getElementById('m-unk').classList.add('active');
+  }
+  idx = 0; isFlipped = false;
+  document.getElementById('main-view').style.display = 'block';
+  document.getElementById('done-view').style.display = 'none';
+  showCard();
+}
+
+function doShuffle() {
+  deck = [...ALL].sort(() => Math.random() - 0.5);
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('m-shuf').classList.add('active');
+  idx = 0; isFlipped = false;
+  document.getElementById('main-view').style.display = 'block';
+  document.getElementById('done-view').style.display = 'none';
+  showCard();
+}
+
+function showDone() {
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('done-view').style.display = 'block';
+  const k = known.size;
+  const pct = Math.round((k / ALL.length) * 100);
+  document.getElementById('done-pct').textContent = pct + '%';
+  document.getElementById('done-icon').textContent = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '💪';
+  document.getElementById('done-title').textContent = pct >= 80 ? '表現優秀！' : pct >= 50 ? '繼續努力！' : '加油，再練一次！';
+  document.getElementById('done-sub').innerHTML = `已掌握 <strong>${k}</strong> 張・待加強 <strong>${unknown.size}</strong> 張<br>共 ${ALL.length} 張・掌握率`;
+  document.getElementById('retry-btn').style.display = unknown.size ? 'flex' : 'none';
+}
+
+function restart(t) {
+  document.getElementById('main-view').style.display = 'block';
+  document.getElementById('done-view').style.display = 'none';
+  if (t === 'unk') {
+    const unk = ALL.filter((_, i) => unknown.has(i));
+    deck = unk.length ? unk : [...ALL];
+  } else {
+    deck = [...ALL]; known.clear(); unknown.clear();
+  }
+  idx = 0; isFlipped = false;
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('m-all').classList.add('active');
+  showCard();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!isFlipped) flip(); }
+  if (e.key === 'ArrowRight' && isFlipped) answer(true);
+  if (e.key === 'ArrowLeft'  && isFlipped) answer(false);
+  if (e.key === 'ArrowDown') skip();
+});
+
+showCard();
+</script>
+</body>
+</html>
