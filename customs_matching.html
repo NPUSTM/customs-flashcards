@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關務英文連連看</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F2EC;--surface:#FDFBF7;--border:#D6CFC0;--border-light:#EAE5DA;
+  --text:#1A1714;--text-muted:#6B6459;--text-hint:#9E9590;
+  --accent:#2D5A3D;--accent-light:#E8F2EC;--accent-text:#1E3D2A;
+  --danger:#8B2A1A;--danger-light:#F5EAE7;
+  --selected:#1a5276;--selected-bg:#d6eaf8;--selected-border:#2e86c1;
+  --correct:#1a7a4a;--correct-bg:#e6f5ed;
+  --wrong:#c0392b;--wrong-bg:#fdecea;
+  --gold:#8B6914;--gold-bg:#FDF6E3;
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{background:var(--text);color:var(--bg);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.header-title{font-family:'Noto Serif TC',serif;font-size:clamp(1rem,3vw,1.4rem);font-weight:700;letter-spacing:.05em;}
+.header-sub{font-size:.72rem;opacity:.5;letter-spacing:.12em;margin-top:4px;}
+.badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:2rem;padding:4px 14px;font-size:.72rem;font-family:'DM Mono',monospace;white-space:nowrap;}
+
+.container{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
+
+/* ── Start ── */
+#start-screen{text-align:center;padding:2rem 0;}
+.start-card{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:2.5rem 2rem;max-width:500px;margin:0 auto;}
+.start-icon{font-size:3rem;margin-bottom:1rem;}
+.start-title{font-family:'Noto Serif TC',serif;font-size:1.5rem;font-weight:700;margin-bottom:.5rem;}
+.start-sub{color:var(--text-muted);font-size:.9rem;line-height:1.8;margin-bottom:1.5rem;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:10px;padding:12px 16px;margin-bottom:10px;}
+.setting-label{font-size:.85rem;font-weight:500;}
+.setting-select{border:1px solid var(--border);background:var(--surface);border-radius:6px;padding:5px 10px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);}
+
+/* ── Game ── */
+#game-screen{display:none;}
+.top-bar{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.top-stat{font-family:'DM Mono',monospace;font-size:.8rem;border-radius:2rem;padding:5px 14px;white-space:nowrap;}
+.stat-pairs{background:var(--accent-light);color:var(--accent-text);}
+.stat-err{background:var(--danger-light);color:var(--danger);}
+.stat-time{background:var(--bg);border:1px solid var(--border);color:var(--text-muted);}
+.stat-score{background:var(--gold-bg);color:var(--gold);border:1px solid #deb96a;}
+.progress-track{flex:1;height:5px;background:var(--border-light);border-radius:99px;overflow:hidden;min-width:60px;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s;}
+
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+.col-header{font-size:.7rem;letter-spacing:.12em;color:var(--text-hint);text-transform:uppercase;text-align:center;margin-bottom:6px;padding:6px;}
+
+.card{
+  padding:13px 16px;border-radius:10px;
+  border:1.5px solid var(--border-light);
+  background:var(--surface);
+  cursor:pointer;font-size:.85rem;line-height:1.5;
+  transition:all .18s;text-align:center;
+  min-height:54px;display:flex;align-items:center;justify-content:center;
+  user-select:none;
+}
+.card:hover:not(.matched):not(.wrong-flash){border-color:var(--selected-border);background:var(--selected-bg);}
+.card.selected{border-color:var(--selected-border);background:var(--selected-bg);color:var(--selected);font-weight:500;box-shadow:0 0 0 2px rgba(46,134,193,.2);}
+.card.matched{border-color:var(--correct);background:var(--correct-bg);color:var(--correct);cursor:default;font-weight:500;}
+.card.wrong-flash{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong);}
+.card.cn{font-family:'Noto Serif TC',serif;font-size:.88rem;}
+.card.en{font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:.02em;}
+
+/* round complete banner */
+.round-banner{display:none;background:var(--surface);border:1px solid var(--border-light);border-radius:12px;padding:1.25rem;text-align:center;margin-bottom:1.25rem;}
+.round-banner.show{display:block;}
+.banner-title{font-family:'Noto Serif TC',serif;font-size:1.1rem;font-weight:700;margin-bottom:.25rem;}
+.banner-sub{font-size:.85rem;color:var(--text-muted);}
+
+/* ── Result ── */
+#result-screen{display:none;}
+.result-card{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:2.5rem 2rem;text-align:center;}
+.result-icon{font-size:3.5rem;margin-bottom:.75rem;}
+.result-pct{font-family:'DM Mono',monospace;font-size:4rem;font-weight:500;color:var(--accent);line-height:1;margin-bottom:.25rem;}
+.result-title{font-family:'Noto Serif TC',serif;font-size:1.4rem;font-weight:700;margin-bottom:.5rem;}
+.result-sub{color:var(--text-muted);font-size:.88rem;line-height:1.8;margin-bottom:1.5rem;}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;}
+.rstat{background:var(--bg);border-radius:10px;padding:12px 8px;}
+.rstat-num{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:500;}
+.rstat-num.g{color:var(--correct);}
+.rstat-num.r{color:var(--danger);}
+.rstat-num.b{color:var(--accent);}
+.rstat-label{font-size:.7rem;color:var(--text-muted);margin-top:3px;}
+.result-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn{padding:10px 22px;border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--surface);color:var(--text);}
+.btn:hover{background:var(--bg);}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.btn-primary:hover{background:#333;}
+
+@media(max-width:600px){
+  .game-grid{gap:8px;}
+  .card{font-size:.78rem;padding:10px 10px;min-height:48px;}
+  .card.en{font-size:.7rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">關務英文連連看</div>
+    <div class="header-sub">CUSTOMS ENGLISH MATCHING GAME</div>
+  </div>
+  <span class="badge">165 題題庫</span>
+</header>
+
+<div class="container">
+
+<!-- Start -->
+<div id="start-screen">
+  <div class="start-card">
+    <div class="start-icon">🔗</div>
+    <div class="start-title">關務英文連連看</div>
+    <div class="start-sub">點選左欄中文，再點右欄英文配對<br>全部配對完成即可進入下一關！</div>
+    <div class="setting-row">
+      <span class="setting-label">📌 每輪配對數量</span>
+      <select class="setting-select" id="pair-count">
+        <option value="6">6 對（入門）</option>
+        <option value="8" selected>8 對（標準）</option>
+        <option value="10">10 對（進階）</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">📚 出題範圍</span>
+      <select class="setting-select" id="deck-range">
+        <option value="all" selected>兩冊合併（165 題）</option>
+        <option value="vol1">第一冊（75 題）</option>
+        <option value="vol2">第二冊（90 題）</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🔄 總共幾輪</span>
+      <select class="setting-select" id="round-count">
+        <option value="3">3 輪</option>
+        <option value="5" selected>5 輪</option>
+        <option value="10">10 輪</option>
+      </select>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="startGame()" style="width:100%;padding:13px;font-size:1rem;">開始遊戲 →</button>
+  </div>
+</div>
+
+<!-- Game -->
+<div id="game-screen">
+  <div class="top-bar">
+    <span class="top-stat stat-pairs" id="stat-pairs">配對 0/8</span>
+    <span class="top-stat stat-err" id="stat-err">錯誤 0</span>
+    <span class="top-stat stat-time" id="stat-time">⏱ 00:00</span>
+    <span class="top-stat stat-score" id="stat-score">★ 0 分</span>
+    <div class="progress-track"><div class="progress-fill" id="game-prog" style="width:0%"></div></div>
+    <span style="font-family:'DM Mono',monospace;font-size:.75rem;color:var(--text-muted);white-space:nowrap;" id="round-label">第 1 / 5 輪</span>
+  </div>
+
+  <div class="round-banner" id="round-banner">
+    <div class="banner-title" id="banner-title">🎉 這輪完成！</div>
+    <div class="banner-sub" id="banner-sub">準備進入下一輪...</div>
+  </div>
+
+  <div class="game-grid">
+    <div>
+      <div class="col-header">中文</div>
+      <div id="col-cn" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div>
+      <div class="col-header">English</div>
+      <div id="col-en" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Result -->
+<div id="result-screen">
+  <div class="result-card">
+    <div class="result-icon" id="r-icon">🏆</div>
+    <div class="result-pct" id="r-score-big">0</div>
+    <div class="result-title" id="r-title">遊戲結束！</div>
+    <div class="result-sub" id="r-sub"></div>
+    <div class="result-stats">
+      <div class="rstat"><div class="rstat-num g" id="r-matched">0</div><div class="rstat-label">配對成功</div></div>
+      <div class="rstat"><div class="rstat-num r" id="r-errors">0</div><div class="rstat-label">錯誤次數</div></div>
+      <div class="rstat"><div class="rstat-num b" id="r-time">0s</div><div class="rstat-label">完成時間</div></div>
+    </div>
+    <div class="result-btns">
+      <button class="btn btn-primary" onclick="startGame()">↺ 再玩一次</button>
+      <button class="btn" onclick="goHome()">⚙ 重新設定</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const VOL1 = [
+  ["無障礙通關環境","A Barrier-free Customs Clearance Environment"],
+  ["從價稅","Ad Valorem Duty"],
+  ["行政救濟","Administrative Remedy"],
+  ["補稅金額","Amount of Duty to be Recovered"],
+  ["貨品暫准通關證","A.T.A. Carnet"],
+  ["提貨單","Bill of Lading"],
+  ["原產地證明書","Certificate of Origin"],
+  ["關稅完稅價格","Customs Taxable Value"],
+  ["電子資料交換","EDI (Electronic Data Interchange)"],
+  ["調和制度編碼","HS Code"],
+  ["進口貨物艙單","Import Cargo Manifest"],
+  ["通關方式","Mode of Clearance"],
+  ["起運地海關","Customs Office of Departure"],
+  ["裝箱單","Packing List"],
+  ["商港服務費","Commercial Port Dues"],
+  ["復運出口","Re-export"],
+  ["實名認證","Real Name Authentication"],
+  ["關稅配額","Tariff Quotas"],
+  ["三角貿易","Triangular Trade"],
+  ["查緝走私","Anti-smuggling Operation"],
+  ["沒入","Confiscation / Forfeiture"],
+  ["海關緝私條例","Customs Anti-Smuggling Act"],
+  ["瀕臨絕種動植物","Endangered Species"],
+  ["智慧財產權","Intellectual Property Rights (IPR)"],
+  ["緝獲","Seizure"],
+  ["後送行李","Unaccompanied Baggage"],
+  ["計算價格","Computed Value"],
+  ["貨價申報書","Customs Value Declaration Form"],
+  ["權利金及報酬","Royalties and License Fees"],
+  ["事後稽核制度","Post-clearance Audit System"],
+  ["自主管理","Autonomous Management"],
+  ["除帳","Account Write-off"],
+  ["科技產業園區","Technology Industrial Park"],
+  ["自由貿易港區","Free Trade Zone"],
+  ["下腳","Scraps"],
+  ["退稅","Duty Drawback"],
+  ["反傾銷稅","Anti-dumping Duty"],
+  ["到岸價格","CIF (Cost, Insurance, and Freight)"],
+  ["離岸價格","FOB (Free on Board)"],
+  ["落日檢討","Sunset Review"],
+  ["平衡稅","Countervailing Duty"],
+  ["最惠國待遇","MFN (Most-Favored-Nation Treatment)"],
+  ["京都公約","Kyoto Convention"],
+  ["貿易便捷化協定","TFA (Trade Facilitation Agreement)"],
+  ["關務互助協定","CMAA"],
+  ["單一窗口","Single Window"],
+  ["境內關外","Within National Territory but Outside Customs Territory"],
+  ["關港貿單一窗口","CPT Single Window"],
+  ["無紙化通關","Paperless Customs Clearance"],
+  ["廣義通關時間統計","Time Release Study (TRS)"],
+];
+
+const VOL2 = [
+  ["違禁品","Contraband"],
+  ["艙單","Manifest"],
+  ["經認證經濟業者","AEO (Authorized Economic Operators)"],
+  ["自由貿易協定","Free Trade Agreement (FTA)"],
+  ["卸貨港","Port of Discharge"],
+  ["保證金","Security Deposit"],
+  ["處方箋","Prescription"],
+  ["從價稅","Ad Valorem Duty"],
+  ["關稅豁免","Customs Duty Exemption"],
+  ["關稅配額","Tariff Quota"],
+  ["微不足道的價值","Negligible Value"],
+  ["個人隨身物品","Personal Effects"],
+  ["互惠待遇","Reciprocal Treatment"],
+  ["智慧財產權","IPR (Intellectual Property Rights)"],
+  ["交易價格","Transaction Value"],
+  ["同樣貨物","Identical Goods"],
+  ["同類貨物","Similar Goods"],
+  ["原產地規則","Rules of Origin"],
+  ["到岸價格","CIF (Cost, Insurance, and Freight)"],
+  ["船上交貨","DDP (Delivered Duty Paid)"],
+  ["船邊交貨","FAS (Free Alongside Ship)"],
+  ["洗錢","Money Laundering"],
+  ["碳邊境調整機制","CBAM"],
+  ["特別防衛措施","Special Safeguard Measures"],
+  ["反傾銷稅","Anti-dumping Duty"],
+  ["平衡稅","Countervailing Duties"],
+  ["扣押","Detain / Seize"],
+  ["仿菸品","Imitation Tobacco Products"],
+  ["關港貿單一窗口","CPT Single Window"],
+  ["委任書","Power of Attorney"],
+  ["預先稅則分類裁定","Advance Tariff Classification Ruling"],
+  ["非侵入式查驗","Non-intrusive Inspection"],
+  ["微量免稅額","De Minimis"],
+  ["海關通關程序","Customs Clearance Procedure"],
+  ["傾銷","Dumping"],
+  ["沒收","Confiscation"],
+  ["貿易便利化","Trade Facilitation"],
+  ["世界貿易組織","WTO (World Trade Organization)"],
+  ["世界海關組織","WCO (World Customs Organization)"],
+  ["完稅價格","Customs Value"],
+  ["臨時反傾銷稅","Provisional Anti-dumping Duty"],
+  ["非法貿易","Illicit Trade"],
+  ["紅色通道","Red Channel"],
+  ["檢疫","Quarantine"],
+  ["互惠待遇","Reciprocal Treatment"],
+];
+
+let allCards = [];
+let pairCount = 8;
+let totalRounds = 5;
+let currentRound = 0;
+let totalErrors = 0;
+let totalMatched = 0;
+let totalScore = 0;
+let gameStartTime = null;
+let roundTimer = null;
+let elapsedSeconds = 0;
+let selectedCn = null;
+let selectedEn = null;
+let roundPairs = [];
+let matchedCount = 0;
+let roundErrors = 0;
+let isAnimating = false;
+let usedIndices = [];
+
+function buildDeck(range) {
+  if (range === 'vol1') return [...VOL1];
+  if (range === 'vol2') return [...VOL2];
+  // merge and deduplicate by cn
+  const seen = new Set();
+  return [...VOL1, ...VOL2].filter(c => { if(seen.has(c[0])) return false; seen.add(c[0]); return true; });
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function startGame() {
+  pairCount = parseInt(document.getElementById('pair-count').value);
+  totalRounds = parseInt(document.getElementById('round-count').value);
+  const range = document.getElementById('deck-range').value;
+  allCards = shuffle(buildDeck(range));
+  currentRound = 0; totalErrors = 0; totalMatched = 0; totalScore = 0;
+  elapsedSeconds = 0; usedIndices = [];
+  gameStartTime = Date.now();
+  clearInterval(roundTimer);
+  roundTimer = setInterval(() => {
+    elapsedSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+    document.getElementById('stat-time').textContent = '⏱ ' + fmtTime(elapsedSeconds);
+  }, 500);
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  document.getElementById('round-banner').classList.remove('show');
+  startRound();
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s/60).toString().padStart(2,'0');
+  const sec = (s%60).toString().padStart(2,'0');
+  return m+':'+sec;
+}
+
+function startRound() {
+  currentRound++;
+  matchedCount = 0; roundErrors = 0;
+  selectedCn = null; selectedEn = null; isAnimating = false;
+  document.getElementById('round-banner').classList.remove('show');
+
+  // Pick pairs not used yet (recycle if needed)
+  if (usedIndices.length + pairCount > allCards.length) usedIndices = [];
+  const available = allCards.filter((_, i) => !usedIndices.includes(i));
+  roundPairs = shuffle(available).slice(0, pairCount);
+  roundPairs.forEach(p => usedIndices.push(allCards.indexOf(p)));
+
+  updateTopBar();
+  renderGrid();
+}
+
+function updateTopBar() {
+  document.getElementById('stat-pairs').textContent = '配對 ' + matchedCount + '/' + pairCount;
+  document.getElementById('stat-err').textContent = '錯誤 ' + totalErrors;
+  document.getElementById('stat-score').textContent = '★ ' + totalScore + ' 分';
+  document.getElementById('round-label').textContent = '第 ' + currentRound + ' / ' + totalRounds + ' 輪';
+  document.getElementById('game-prog').style.width = Math.round(((currentRound-1)/totalRounds)*100 + (matchedCount/pairCount/totalRounds)*100) + '%';
+}
+
+function renderGrid() {
+  const cnList = shuffle(roundPairs.map((p,i) => ({text: p[0], idx: i, type:'cn'})));
+  const enList = shuffle(roundPairs.map((p,i) => ({text: p[1], idx: i, type:'en'})));
+
+  const colCn = document.getElementById('col-cn');
+  const colEn = document.getElementById('col-en');
+  colCn.innerHTML = ''; colEn.innerHTML = '';
+
+  cnList.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'card cn';
+    div.textContent = item.text;
+    div.dataset.idx = item.idx;
+    div.dataset.type = 'cn';
+    div.onclick = () => selectCard(div);
+    colCn.appendChild(div);
+  });
+
+  enList.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'card en';
+    div.textContent = item.text;
+    div.dataset.idx = item.idx;
+    div.dataset.type = 'en';
+    div.onclick = () => selectCard(div);
+    colEn.appendChild(div);
+  });
+}
+
+function selectCard(el) {
+  if (isAnimating) return;
+  if (el.classList.contains('matched')) return;
+
+  const type = el.dataset.type;
+
+  if (type === 'cn') {
+    // deselect previous cn
+    document.querySelectorAll('.card.cn.selected').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCn = el;
+  } else {
+    document.querySelectorAll('.card.en.selected').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedEn = el;
+  }
+
+  if (selectedCn && selectedEn) checkMatch();
+}
+
+function checkMatch() {
+  isAnimating = true;
+  const cnIdx = parseInt(selectedCn.dataset.idx);
+  const enIdx = parseInt(selectedEn.dataset.idx);
+
+  if (cnIdx === enIdx) {
+    // Correct!
+    selectedCn.classList.remove('selected');
+    selectedEn.classList.remove('selected');
+    selectedCn.classList.add('matched');
+    selectedEn.classList.add('matched');
+    selectedCn.onclick = null;
+    selectedEn.onclick = null;
+    matchedCount++;
+    totalMatched++;
+    const pts = Math.max(10, 20 - roundErrors * 2);
+    totalScore += pts;
+    selectedCn = null; selectedEn = null;
+    updateTopBar();
+    isAnimating = false;
+    if (matchedCount === pairCount) setTimeout(roundComplete, 400);
+  } else {
+    // Wrong!
+    roundErrors++;
+    totalErrors++;
+    selectedCn.classList.add('wrong-flash');
+    selectedEn.classList.add('wrong-flash');
+    updateTopBar();
+    setTimeout(() => {
+      if(selectedCn) { selectedCn.classList.remove('wrong-flash','selected'); }
+      if(selectedEn) { selectedEn.classList.remove('wrong-flash','selected'); }
+      selectedCn = null; selectedEn = null;
+      isAnimating = false;
+    }, 700);
+  }
+}
+
+function roundComplete() {
+  clearInterval(roundTimer);
+  const banner = document.getElementById('round-banner');
+  document.getElementById('banner-title').textContent = '🎉 第 ' + currentRound + ' 輪完成！';
+  document.getElementById('banner-sub').textContent = '錯誤 ' + roundErrors + ' 次・累計得分 ' + totalScore + ' 分';
+  banner.classList.add('show');
+
+  if (currentRound >= totalRounds) {
+    setTimeout(showResult, 1800);
+  } else {
+    setTimeout(() => {
+      banner.classList.remove('show');
+      roundTimer = setInterval(() => {
+        elapsedSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+        document.getElementById('stat-time').textContent = '⏱ ' + fmtTime(elapsedSeconds);
+      }, 500);
+      startRound();
+    }, 1800);
+  }
+}
+
+function showResult() {
+  clearInterval(roundTimer);
+  elapsedSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+  const pct = Math.round((totalMatched / (pairCount * totalRounds)) * 100);
+  document.getElementById('r-icon').textContent = totalErrors === 0 ? '🏆' : pct >= 80 ? '🥇' : pct >= 60 ? '👍' : '💪';
+  document.getElementById('r-score-big').textContent = totalScore + ' 分';
+  document.getElementById('r-title').textContent = totalErrors === 0 ? '完美通關！零錯誤！' : pct >= 80 ? '表現優秀！' : pct >= 60 ? '不錯！繼續加油！' : '多練習就會進步！';
+  document.getElementById('r-sub').innerHTML = `共完成 ${totalRounds} 輪・${pairCount * totalRounds} 組配對<br>用時 ${fmtTime(elapsedSeconds)}`;
+  document.getElementById('r-matched').textContent = totalMatched;
+  document.getElementById('r-errors').textContent = totalErrors;
+  document.getElementById('r-time').textContent = fmtTime(elapsedSeconds);
+  document.getElementById('game-prog').style.width = '100%';
+}
+
+function goHome() {
+  clearInterval(roundTimer);
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('start-screen').style.display = 'block';
+}
+</script>
+</body>
+</html>
