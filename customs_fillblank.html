@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關務英文填空題</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F2EC;--surface:#FDFBF7;--border:#D6CFC0;--border-light:#EAE5DA;
+  --text:#1A1714;--text-muted:#6B6459;--text-hint:#9E9590;
+  --accent:#2D5A3D;--accent-light:#E8F2EC;--accent-text:#1E3D2A;
+  --danger:#8B2A1A;--danger-light:#F5EAE7;
+  --correct:#1a7a4a;--correct-bg:#e6f5ed;
+  --wrong:#c0392b;--wrong-bg:#fdecea;
+  --gold:#8B6914;--gold-bg:#FDF6E3;
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{background:var(--text);color:var(--bg);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.header-title{font-family:'Noto Serif TC',serif;font-size:clamp(1rem,3vw,1.4rem);font-weight:700;letter-spacing:.05em;}
+.header-sub{font-size:.72rem;opacity:.5;letter-spacing:.12em;margin-top:4px;}
+.badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:2rem;padding:4px 14px;font-size:.72rem;font-family:'DM Mono',monospace;}
+
+.container{max-width:680px;margin:0 auto;padding:1.75rem 1.25rem 4rem;}
+
+/* Start */
+#start-screen{text-align:center;}
+.start-card{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:2.5rem 2rem;}
+.start-icon{font-size:3rem;margin-bottom:1rem;}
+.start-title{font-family:'Noto Serif TC',serif;font-size:1.5rem;font-weight:700;margin-bottom:.5rem;}
+.start-sub{color:var(--text-muted);font-size:.9rem;line-height:1.8;margin-bottom:1.5rem;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:10px;padding:12px 16px;margin-bottom:10px;}
+.setting-label{font-size:.85rem;font-weight:500;}
+.setting-select{border:1px solid var(--border);background:var(--surface);border-radius:6px;padding:5px 10px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);}
+
+/* Quiz */
+#quiz-screen{display:none;}
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.top-stat{font-family:'DM Mono',monospace;font-size:.78rem;border-radius:2rem;padding:5px 13px;white-space:nowrap;}
+.stat-green{background:var(--accent-light);color:var(--accent-text);}
+.stat-red{background:var(--danger-light);color:var(--danger);}
+.stat-gold{background:var(--gold-bg);color:var(--gold);}
+.stat-gray{background:var(--bg);border:1px solid var(--border);color:var(--text-muted);}
+.progress-track{flex:1;height:5px;background:var(--border-light);border-radius:99px;overflow:hidden;min-width:60px;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s;}
+.q-label{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--text-muted);white-space:nowrap;}
+
+/* Question card */
+.q-card{background:var(--surface);border:1px solid var(--border-light);border-radius:14px;padding:1.75rem;margin-bottom:1.25rem;}
+.q-tag{font-size:.65rem;letter-spacing:.14em;color:var(--text-hint);text-transform:uppercase;margin-bottom:.6rem;}
+.q-text{font-family:'Noto Serif TC',serif;font-size:clamp(.95rem,3vw,1.15rem);font-weight:600;line-height:1.7;margin-bottom:1.25rem;}
+
+/* Hint letters */
+.hint-row{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.hint-label{font-size:.72rem;color:var(--text-hint);letter-spacing:.08em;white-space:nowrap;}
+.hint-letters{display:flex;flex-wrap:wrap;gap:5px;}
+.hint-char{display:inline-flex;align-items:center;justify-content:center;width:28px;height:32px;border-radius:5px;font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500;}
+.hint-char.shown{background:var(--accent-light);color:var(--accent-text);border:1px solid #a8d5b8;}
+.hint-char.hidden{background:var(--bg);color:transparent;border:1px solid var(--border-light);}
+
+/* Input area */
+.input-area{position:relative;margin-bottom:1rem;}
+.answer-input{
+  width:100%;padding:13px 48px 13px 16px;
+  border-radius:10px;border:1.5px solid var(--border);
+  background:var(--bg);
+  font-family:'DM Mono',monospace;font-size:1rem;
+  color:var(--text);outline:none;
+  transition:border-color .2s;
+  letter-spacing:.04em;
+}
+.answer-input:focus{border-color:var(--accent);background:var(--surface);}
+.answer-input.correct-state{border-color:var(--correct);background:var(--correct-bg);color:var(--correct);}
+.answer-input.wrong-state{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong);}
+.submit-btn{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  padding:6px 14px;border-radius:7px;
+  background:var(--text);color:var(--bg);border:none;
+  font-size:.82rem;font-family:'Noto Sans TC',sans-serif;font-weight:500;
+  cursor:pointer;transition:background .15s;
+}
+.submit-btn:hover{background:#333;}
+
+/* Feedback */
+.feedback-box{border-radius:10px;padding:12px 16px;font-size:.88rem;line-height:1.7;margin-bottom:1rem;display:none;}
+.feedback-box.correct{background:var(--correct-bg);color:var(--correct);border:1px solid #a8d5b8;}
+.feedback-box.wrong{background:var(--wrong-bg);color:var(--wrong);border:1px solid #f5b7b1;}
+.feedback-box.skipped{background:var(--gold-bg);color:var(--gold);border:1px solid #deb96a;}
+
+/* Action buttons */
+.action-row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{padding:10px 20px;border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--surface);color:var(--text);}
+.btn:hover{background:var(--bg);}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.btn-primary:hover{background:#333;}
+.btn-hint{color:var(--gold);border-color:#deb96a;background:var(--gold-bg);}
+.btn-hint:hover{background:#f5e8c0;}
+.btn-skip{color:var(--text-muted);}
+#next-btn{display:none;flex:1;}
+
+/* Result */
+#result-screen{display:none;}
+.result-card{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:2.5rem 2rem;text-align:center;}
+.result-icon{font-size:3.5rem;margin-bottom:.75rem;}
+.result-pct{font-family:'DM Mono',monospace;font-size:4rem;font-weight:500;color:var(--accent);line-height:1;margin-bottom:.25rem;}
+.result-title{font-family:'Noto Serif TC',serif;font-size:1.4rem;font-weight:700;margin-bottom:.5rem;}
+.result-sub{color:var(--text-muted);font-size:.88rem;line-height:1.8;margin-bottom:1.5rem;}
+.result-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem;}
+.rstat{background:var(--bg);border-radius:10px;padding:10px 6px;}
+.rstat-num{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;}
+.rstat-num.g{color:var(--correct);}
+.rstat-num.r{color:var(--wrong);}
+.rstat-num.b{color:var(--accent);}
+.rstat-num.y{color:var(--gold);}
+.rstat-label{font-size:.65rem;color:var(--text-muted);margin-top:3px;}
+.result-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;}
+
+/* Review */
+.review-section{text-align:left;border-top:1px solid var(--border-light);padding-top:1.25rem;display:none;}
+.review-title{font-size:.75rem;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;text-transform:uppercase;}
+.review-item{background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--border);}
+.review-item.correct{border-left-color:var(--correct);}
+.review-item.wrong{border-left-color:var(--wrong);}
+.review-item.skipped{border-left-color:var(--gold);}
+.review-q{font-size:.8rem;color:var(--text-muted);margin-bottom:4px;}
+.review-your{font-size:.82rem;margin-bottom:2px;}
+.review-ans{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500;color:var(--accent);}
+
+@media(max-width:480px){
+  header{padding:1rem;}
+  .container{padding:1.25rem 1rem 3rem;}
+  .result-stats{grid-template-columns:repeat(2,1fr);}
+  .answer-input{font-size:.9rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">關務英文填空題</div>
+    <div class="header-sub">CUSTOMS ENGLISH FILL-IN-THE-BLANK</div>
+  </div>
+  <span class="badge">165 題題庫</span>
+</header>
+
+<div class="container">
+
+<!-- Start -->
+<div id="start-screen">
+  <div class="start-card">
+    <div class="start-icon">✍️</div>
+    <div class="start-title">關務英文填空測驗</div>
+    <div class="start-sub">看中文題目，自行輸入英文答案<br>支援提示功能・不分大小寫・完成後顯示詳細成績單</div>
+    <div class="setting-row">
+      <span class="setting-label">📝 出題數量</span>
+      <select class="setting-select" id="q-count">
+        <option value="10">10 題（快速練習）</option>
+        <option value="20" selected>20 題（標準測驗）</option>
+        <option value="30">30 題（進階測驗）</option>
+        <option value="50">50 題（完整測驗）</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">💡 提示模式</span>
+      <select class="setting-select" id="hint-mode">
+        <option value="first">顯示首字母</option>
+        <option value="partial" selected>顯示部分字母（每3字1個）</option>
+        <option value="none">完全不提示（最難）</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">📚 出題範圍</span>
+      <select class="setting-select" id="deck-range">
+        <option value="all" selected>兩冊合併（165 題）</option>
+        <option value="vol1">第一冊（75 題）</option>
+        <option value="vol2">第二冊（90 題）</option>
+      </select>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;padding:13px;font-size:1rem;">開始填空 ✍️</button>
+  </div>
+</div>
+
+<!-- Quiz -->
+<div id="quiz-screen">
+  <div class="top-bar">
+    <span class="top-stat stat-green" id="s-correct">✓ 0</span>
+    <span class="top-stat stat-red" id="s-wrong">✕ 0</span>
+    <span class="top-stat stat-gold" id="s-score">★ 0 分</span>
+    <div class="progress-track"><div class="progress-fill" id="q-prog"></div></div>
+    <span class="q-label" id="q-label">1 / 20</span>
+  </div>
+
+  <div class="q-card">
+    <div class="q-tag">中文題目 → 請輸入英文答案</div>
+    <div class="q-text" id="q-text"></div>
+
+    <div class="hint-row" id="hint-row">
+      <span class="hint-label">提示：</span>
+      <div class="hint-letters" id="hint-letters"></div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" class="answer-input" id="answer-input"
+      placeholder="請輸入英文答案..."
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      onkeydown="handleKey(event)">
+    <button class="submit-btn" onclick="submitAnswer()">確認</button>
+  </div>
+
+  <div class="feedback-box" id="feedback"></div>
+
+  <div class="action-row">
+    <button class="btn btn-hint" id="hint-btn" onclick="revealHint()">💡 多顯示一個字母</button>
+    <button class="btn btn-skip" id="skip-btn" onclick="skipQuestion()">跳過 →</button>
+    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">下一題 →</button>
+  </div>
+</div>
+
+<!-- Result -->
+<div id="result-screen">
+  <div class="result-card">
+    <div class="result-icon" id="r-icon">🏆</div>
+    <div class="result-pct" id="r-pct">0%</div>
+    <div class="result-title" id="r-title">測驗完成！</div>
+    <div class="result-sub" id="r-sub"></div>
+    <div class="result-stats">
+      <div class="rstat"><div class="rstat-num g" id="r-correct">0</div><div class="rstat-label">完全正確</div></div>
+      <div class="rstat"><div class="rstat-num r" id="r-wrong">0</div><div class="rstat-label">答錯</div></div>
+      <div class="rstat"><div class="rstat-num y" id="r-skip">0</div><div class="rstat-label">跳過</div></div>
+      <div class="rstat"><div class="rstat-num b" id="r-score">0</div><div class="rstat-label">總分</div></div>
+    </div>
+    <div class="result-btns">
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ 再測一次</button>
+      <button class="btn btn-hint" onclick="toggleReview()" id="review-btn">📋 查看詳解</button>
+      <button class="btn" onclick="goHome()">⚙ 重新設定</button>
+    </div>
+    <div class="review-section" id="review-section">
+      <div class="review-title">📋 詳細答題記錄</div>
+      <div id="review-list"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const VOL1=[
+  ["無障礙通關環境","A Barrier-free Customs Clearance Environment"],
+  ["從價稅","Ad Valorem Duty"],
+  ["行政救濟","Administrative Remedy"],
+  ["補稅金額","Amount of Duty to be Recovered"],
+  ["貨品暫准通關證","A.T.A. Carnet"],
+  ["伊斯坦堡公約","Istanbul Convention"],
+  ["提貨單","Bill of Lading"],
+  ["原產地證明書","Certificate of Origin"],
+  ["收貨人","Consignee"],
+  ["發貨人","Consignor"],
+  ["按月彙總繳納稅費","Consolidated Payment of Duties on a Monthly Basis"],
+  ["關稅法","Customs Act"],
+  ["報關行","Customs Broker"],
+  ["關稅完稅價格","Customs Taxable Value"],
+  ["微量價值","De Minimis Shipment Value"],
+  ["先放後稅","Post-release Duty Payment"],
+  ["電子資料交換","Electronic Data Interchange (EDI)"],
+  ["調和制度","Harmonized Commodity Description and Coding System"],
+  ["菸酒稅","Tobacco and Alcohol Tax"],
+  ["進口貨物艙單","Import Cargo Manifest"],
+  ["進口船隻","Inbound Vessel"],
+  ["通關方式","Mode of Clearance"],
+  ["起運地海關","Customs Office of Departure"],
+  ["從量","On a Specific Basis"],
+  ["裝箱單","Packing List"],
+  ["商港服務費","Commercial Port Dues"],
+  ["復運出口","Re-export"],
+  ["實名認證","Real Name Authentication"],
+  ["無商業價值樣品","Samples of No Commercial Value"],
+  ["關稅配額","Tariff Quotas"],
+  ["三角貿易","Triangular Trade"],
+  ["進口貨物稅則預審","Advance Ruling for Tariff Classification"],
+  ["優質企業認證","Certification of Authorized Economic Operators"],
+  ["查緝走私","Anti-smuggling Operation"],
+  ["沒入","Confiscation"],
+  ["海關緝私條例","Customs Anti-Smuggling Act"],
+  ["紅綠線通關制度","Red/Green Line Passenger Clearance System"],
+  ["瀕臨絕種動植物","Endangered Species"],
+  ["智慧財產權","Intellectual Property Rights"],
+  ["緝獲","Seizure"],
+  ["後送行李","Unaccompanied Baggage"],
+  ["戰略性高科技貨品","Strategic High-tech Commodities"],
+  ["計算價格","Computed Value"],
+  ["貨價申報書","Customs Value Declaration Form"],
+  ["權利金及報酬","Royalties and License Fees"],
+  ["同樣貨物之交易價格","Transaction Value of Identical Goods"],
+  ["事後稽核制度","Post-clearance Audit System"],
+  ["預估發票","Pro-forma Invoice"],
+  ["自主管理","Autonomous Management"],
+  ["除帳","Account Write-off"],
+];
+
+const VOL2=[
+  ["違禁品","Contraband"],
+  ["艙單","Manifest"],
+  ["經認證經濟業者","Authorized Economic Operators"],
+  ["自由貿易協定","Free Trade Agreement"],
+  ["卸貨港","Port of Discharge"],
+  ["保證金","Security Deposit"],
+  ["處方箋","Prescription"],
+  ["關稅豁免","Customs Duty Exemption"],
+  ["關稅配額","Tariff Quota"],
+  ["微不足道的價值","Negligible Value"],
+  ["免稅雪茄數量","Twenty-five Cigars"],
+  ["個人隨身物品","Personal Effects"],
+  ["智慧財產權","Intellectual Property Rights"],
+  ["交易價格","Transaction Value"],
+  ["同樣貨物","Identical Goods"],
+  ["同類貨物","Similar Goods"],
+  ["原產地規則","Rules of Origin"],
+  ["到岸價格","Cost, Insurance, and Freight"],
+  ["船上交貨","Delivered Duty Paid"],
+  ["船邊交貨","Free Alongside Ship"],
+  ["洗錢","Money Laundering"],
+  ["碳邊境調整機制","Carbon Border Adjustment Mechanism"],
+  ["特別防衛措施","Special Safeguard Measures"],
+  ["反傾銷稅","Anti-dumping Duty"],
+  ["平衡稅","Countervailing Duties"],
+  ["扣押","Detention"],
+  ["仿菸品","Imitation Tobacco Products"],
+  ["關港貿單一窗口","CPT Single Window"],
+  ["委任書","Power of Attorney"],
+  ["預先稅則分類裁定","Advance Tariff Classification Ruling"],
+  ["非侵入式查驗","Non-intrusive Inspection"],
+  ["微量免稅額","De Minimis"],
+  ["海關通關程序","Customs Clearance Procedure"],
+  ["傾銷","Dumping"],
+  ["沒收","Confiscation"],
+  ["貿易便利化","Trade Facilitation"],
+  ["世界貿易組織","World Trade Organization"],
+  ["世界海關組織","World Customs Organization"],
+  ["完稅價格","Customs Value"],
+  ["臨時反傾銷稅","Provisional Anti-dumping Duty"],
+  ["非法貿易","Illicit Trade"],
+  ["互惠待遇","Reciprocal Treatment"],
+  ["紅色通道","Red Channel"],
+  ["檢疫","Quarantine"],
+];
+
+let deck=[], quizDeck=[], idx=0, score=0, correctCnt=0, wrongCnt=0, skipCnt=0;
+let hintMode='partial', hintRevealed=0, answered=false;
+let history=[], totalQ=20;
+
+function buildDeck(range){
+  if(range==='vol1') return [...VOL1];
+  if(range==='vol2') return [...VOL2];
+  return [...VOL1,...VOL2];
+}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+
+function startQuiz(){
+  totalQ=parseInt(document.getElementById('q-count').value);
+  hintMode=document.getElementById('hint-mode').value;
+  const range=document.getElementById('deck-range').value;
+  deck=shuffle(buildDeck(range));
+  quizDeck=deck.slice(0,Math.min(totalQ,deck.length));
+  idx=0;score=0;correctCnt=0;wrongCnt=0;skipCnt=0;history=[];
+  document.getElementById('start-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  document.getElementById('result-screen').style.display='none';
+  showQuestion();
+}
+
+function showQuestion(){
+  if(idx>=quizDeck.length){showResult();return;}
+  answered=false; hintRevealed=0;
+  const q=quizDeck[idx];
+  document.getElementById('q-text').textContent=q[0];
+  document.getElementById('q-label').textContent=(idx+1)+' / '+quizDeck.length;
+  document.getElementById('q-prog').style.width=Math.round((idx/quizDeck.length)*100)+'%';
+
+  const inp=document.getElementById('answer-input');
+  inp.value=''; inp.className='answer-input'; inp.disabled=false; inp.focus();
+
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('next-btn').style.display='none';
+  document.getElementById('hint-btn').style.display='inline-flex';
+  document.getElementById('skip-btn').style.display='inline-flex';
+
+  buildHintDisplay(q[1], 0);
+  updateStats();
+}
+
+function buildHintDisplay(answer, revealed){
+  const row=document.getElementById('hint-row');
+  const container=document.getElementById('hint-letters');
+  if(hintMode==='none'){row.style.display='none';return;}
+  row.style.display='flex';
+  container.innerHTML='';
+
+  // Show which positions are revealed
+  const chars=answer.split('');
+  chars.forEach((ch,i)=>{
+    const span=document.createElement('span');
+    span.className='hint-char';
+    let show=false;
+    if(hintMode==='first' && i===0) show=true;
+    if(hintMode==='partial' && i%3===0) show=true;
+    if(i<revealed) show=true;
+    if(ch===' '||ch===','||ch==='('||ch===')'||ch==='/'||ch==='-'||ch==='.') show=true;
+    span.classList.add(show?'shown':'hidden');
+    span.textContent=show?ch:'·';
+    container.appendChild(span);
+  });
+}
+
+function revealHint(){
+  hintRevealed+=2;
+  buildHintDisplay(quizDeck[idx][1], hintRevealed);
+}
+
+function handleKey(e){
+  if(e.key==='Enter') submitAnswer();
+}
+
+function normalize(s){
+  return s.trim().toLowerCase()
+    .replace(/\s+/g,' ')
+    .replace(/[().,\-\/]/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+
+function submitAnswer(){
+  if(answered) return;
+  const inp=document.getElementById('answer-input');
+  const userAns=inp.value.trim();
+  if(!userAns){inp.focus();return;}
+  answered=true;
+  const correct=quizDeck[idx][1];
+  const isCorrect=normalize(userAns)===normalize(correct);
+
+  // show full hint
+  buildHintDisplay(correct, 999);
+
+  const fb=document.getElementById('feedback');
+  if(isCorrect){
+    inp.className='answer-input correct-state';
+    fb.className='feedback-box correct';
+    fb.innerHTML='✓ 完全正確！<br><span style="font-family:\'DM Mono\',monospace;font-size:.92rem;">'+correct+'</span>';
+    const pts=hintRevealed>0?5:10;
+    score+=pts;
+    correctCnt++;
+    history.push({q:quizDeck[idx][0],a:correct,yours:userAns,result:'correct'});
+  } else {
+    inp.className='answer-input wrong-state';
+    fb.className='feedback-box wrong';
+    fb.innerHTML='✕ 答錯了！正確答案：<br><span style="font-family:\'DM Mono\',monospace;font-size:.92rem;font-weight:600;">'+correct+'</span>';
+    wrongCnt++;
+    history.push({q:quizDeck[idx][0],a:correct,yours:userAns,result:'wrong'});
+  }
+  fb.style.display='block';
+  inp.disabled=true;
+  document.getElementById('hint-btn').style.display='none';
+  document.getElementById('skip-btn').style.display='none';
+  document.getElementById('next-btn').style.display='block';
+  updateStats();
+}
+
+function skipQuestion(){
+  if(answered) return;
+  answered=true;
+  const correct=quizDeck[idx][1];
+  buildHintDisplay(correct, 999);
+  const fb=document.getElementById('feedback');
+  fb.className='feedback-box skipped';
+  fb.innerHTML='⏭ 跳過！正確答案：<br><span style="font-family:\'DM Mono\',monospace;font-size:.92rem;font-weight:600;">'+correct+'</span>';
+  fb.style.display='block';
+  document.getElementById('answer-input').disabled=true;
+  document.getElementById('hint-btn').style.display='none';
+  document.getElementById('skip-btn').style.display='none';
+  document.getElementById('next-btn').style.display='block';
+  skipCnt++;
+  history.push({q:quizDeck[idx][0],a:correct,yours:'（跳過）',result:'skipped'});
+  updateStats();
+}
+
+function nextQuestion(){ idx++; showQuestion(); }
+
+function updateStats(){
+  document.getElementById('s-correct').textContent='✓ '+correctCnt;
+  document.getElementById('s-wrong').textContent='✕ '+wrongCnt;
+  document.getElementById('s-score').textContent='★ '+score+' 分';
+}
+
+function showResult(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('result-screen').style.display='block';
+  const pct=Math.round((correctCnt/quizDeck.length)*100);
+  document.getElementById('r-pct').textContent=pct+'%';
+  document.getElementById('r-icon').textContent=pct>=90?'🏆':pct>=70?'🥇':pct>=50?'👍':'💪';
+  document.getElementById('r-title').textContent=pct>=90?'太厲害了！滿分高手！':pct>=70?'表現優秀！':pct>=50?'不錯，繼續加油！':'多練習就會進步！';
+  document.getElementById('r-sub').innerHTML=`答對 ${correctCnt} 題・答錯 ${wrongCnt} 題・跳過 ${skipCnt} 題<br>共 ${quizDeck.length} 題`;
+  document.getElementById('r-correct').textContent=correctCnt;
+  document.getElementById('r-wrong').textContent=wrongCnt;
+  document.getElementById('r-skip').textContent=skipCnt;
+  document.getElementById('r-score').textContent=score;
+  document.getElementById('q-prog').style.width='100%';
+}
+
+function toggleReview(){
+  const sec=document.getElementById('review-section');
+  if(sec.style.display==='block'){sec.style.display='none';return;}
+  sec.style.display='block';
+  const list=document.getElementById('review-list');
+  list.innerHTML='';
+  history.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='review-item '+item.result;
+    const icon=item.result==='correct'?'✓':item.result==='skipped'?'⏭':'✕';
+    div.innerHTML=`<div class="review-q">${icon} ${item.q}</div>
+      <div class="review-your" style="color:${item.result==='correct'?'var(--correct)':item.result==='skipped'?'var(--gold)':'var(--wrong)'}">你的答案：${item.yours}</div>
+      <div class="review-ans">正確答案：${item.a}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function restartQuiz(){
+  document.getElementById('result-screen').style.display='none';
+  quizDeck=shuffle(deck).slice(0,totalQ);
+  idx=0;score=0;correctCnt=0;wrongCnt=0;skipCnt=0;history=[];
+  document.getElementById('review-section').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  showQuestion();
+}
+
+function goHome(){
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('start-screen').style.display='block';
+}
+</script>
+</body>
+</html>
