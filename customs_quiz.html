@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關務英文測驗</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F2EC;--surface:#FDFBF7;--border:#D6CFC0;--border-light:#EAE5DA;
+  --text:#1A1714;--text-muted:#6B6459;--text-hint:#9E9590;
+  --accent:#2D5A3D;--accent-light:#E8F2EC;--accent-text:#1E3D2A;
+  --danger:#8B2A1A;--danger-light:#F5EAE7;
+  --correct:#1a7a4a;--correct-bg:#e6f5ed;
+  --wrong:#c0392b;--wrong-bg:#fdecea;
+  --gold:#8B6914;--gold-bg:#FDF6E3;
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{background:var(--text);color:var(--bg);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.header-title{font-family:'Noto Serif TC',serif;font-size:clamp(1rem,3vw,1.4rem);font-weight:700;letter-spacing:.05em;}
+.header-sub{font-size:.72rem;opacity:.5;letter-spacing:.12em;margin-top:4px;}
+.hdr-right{display:flex;gap:10px;align-items:center;}
+.badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:2rem;padding:4px 14px;font-size:.72rem;font-family:'DM Mono',monospace;white-space:nowrap;}
+
+.container{max-width:700px;margin:0 auto;padding:2rem 1.25rem 4rem;}
+
+/* ── Start screen ── */
+#start-screen{text-align:center;padding:2rem 0;}
+.start-card{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:2.5rem 2rem;}
+.start-icon{font-size:3rem;margin-bottom:1rem;}
+.start-title{font-family:'Noto Serif TC',serif;font-size:1.5rem;font-weight:700;margin-bottom:.5rem;}
+.start-sub{color:var(--text-muted);font-size:.9rem;line-height:1.8;margin-bottom:1.5rem;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:10px;padding:12px 16px;margin-bottom:10px;}
+.setting-label{font-size:.85rem;font-weight:500;}
+.setting-select{border:1px solid var(--border);background:var(--surface);border-radius:6px;padding:5px 10px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);}
+
+/* ── Quiz ── */
+#quiz-screen{display:none;}
+.top-bar{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.q-counter{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--text-muted);white-space:nowrap;}
+.progress-track{flex:1;height:5px;background:var(--border-light);border-radius:99px;overflow:hidden;min-width:80px;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s;}
+.score-badge{font-family:'DM Mono',monospace;font-size:.8rem;background:var(--accent-light);color:var(--accent-text);border-radius:2rem;padding:4px 12px;white-space:nowrap;}
+.timer-badge{font-family:'DM Mono',monospace;font-size:.8rem;border-radius:2rem;padding:4px 12px;white-space:nowrap;background:var(--bg);border:1px solid var(--border);}
+.timer-badge.warning{background:#fff3cd;border-color:#f0ad4e;color:#856404;}
+.timer-badge.danger{background:var(--danger-light);border-color:#e0917f;color:var(--danger);}
+
+.q-card{background:var(--surface);border:1px solid var(--border-light);border-radius:14px;padding:1.75rem;margin-bottom:1.25rem;}
+.q-num{font-size:.7rem;letter-spacing:.14em;color:var(--text-hint);margin-bottom:.6rem;text-transform:uppercase;}
+.q-text{font-family:'Noto Serif TC',serif;font-size:clamp(1rem,3vw,1.15rem);font-weight:600;line-height:1.7;}
+
+.options{display:flex;flex-direction:column;gap:10px;}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:10px;border:1.5px solid var(--border-light);background:var(--surface);cursor:pointer;transition:all .15s;text-align:left;font-family:'Noto Sans TC',sans-serif;font-size:.9rem;line-height:1.5;color:var(--text);}
+.opt:hover:not(.answered){border-color:var(--accent);background:var(--accent-light);}
+.opt-label{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:500;color:var(--text-hint);min-width:20px;padding-top:1px;}
+.opt.correct{border-color:var(--correct);background:var(--correct-bg);color:var(--correct);}
+.opt.correct .opt-label{color:var(--correct);}
+.opt.wrong{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong);}
+.opt.wrong .opt-label{color:var(--wrong);}
+.opt.show-correct{border-color:var(--correct);background:var(--correct-bg);}
+
+.feedback{padding:12px 16px;border-radius:10px;font-size:.88rem;line-height:1.6;margin-bottom:1rem;display:none;}
+.feedback.correct{background:var(--correct-bg);color:var(--correct);border:1px solid #a8d5b8;}
+.feedback.wrong{background:var(--wrong-bg);color:var(--wrong);border:1px solid #f5b7b1;}
+
+.next-btn{width:100%;padding:12px;border-radius:10px;background:var(--text);color:var(--bg);border:none;font-family:'Noto Sans TC',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:background .15s;display:none;}
+.next-btn:hover{background:#333;}
+
+/* ── Result ── */
+#result-screen{display:none;}
+.result-card{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:2.5rem 2rem;text-align:center;}
+.result-icon{font-size:3.5rem;margin-bottom:.75rem;}
+.result-pct{font-family:'DM Mono',monospace;font-size:4rem;font-weight:500;line-height:1;color:var(--accent);margin-bottom:.25rem;}
+.result-title{font-family:'Noto Serif TC',serif;font-size:1.4rem;font-weight:700;margin-bottom:.5rem;}
+.result-sub{color:var(--text-muted);font-size:.88rem;line-height:1.8;margin-bottom:1.5rem;}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;}
+.rstat{background:var(--bg);border-radius:10px;padding:12px 8px;text-align:center;}
+.rstat-num{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:500;}
+.rstat-num.g{color:var(--correct);}
+.rstat-num.r{color:var(--wrong);}
+.rstat-num.b{color:var(--accent);}
+.rstat-label{font-size:.7rem;color:var(--text-muted);margin-top:3px;}
+.result-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn{padding:10px 22px;border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--surface);color:var(--text);}
+.btn:hover{background:var(--bg);}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.btn-primary:hover{background:#333;}
+
+/* review list */
+.review-section{margin-top:1.5rem;text-align:left;}
+.review-title{font-size:.8rem;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.75rem;text-transform:uppercase;}
+.review-item{background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--border);}
+.review-item.wrong{border-left-color:var(--wrong);}
+.review-item.correct{border-left-color:var(--correct);}
+.review-q{font-size:.82rem;color:var(--text-muted);margin-bottom:4px;}
+.review-a{font-size:.85rem;font-weight:500;}
+
+@media(max-width:480px){
+  header{padding:1rem;}
+  .container{padding:1.25rem 1rem 3rem;}
+  .opt{font-size:.84rem;padding:12px 14px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">關務英文測驗</div>
+    <div class="header-sub">CUSTOMS ENGLISH QUIZ</div>
+  </div>
+  <div class="hdr-right">
+    <span class="badge">165 題題庫</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- Start -->
+<div id="start-screen">
+  <div class="start-card">
+    <div class="start-icon">📋</div>
+    <div class="start-title">關務英文選擇題測驗</div>
+    <div class="start-sub">從 165 題題庫隨機出題・4 選 1・即時計分<br>完成後顯示成績單與錯題複習</div>
+    <div class="setting-row">
+      <span class="setting-label">📝 出題數量</span>
+      <select class="setting-select" id="q-count">
+        <option value="10">10 題（快速練習）</option>
+        <option value="20" selected>20 題（標準測驗）</option>
+        <option value="30">30 題（進階測驗）</option>
+        <option value="50">50 題（完整測驗）</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">⏱ 每題限時</span>
+      <select class="setting-select" id="time-limit">
+        <option value="0">不限時</option>
+        <option value="15">15 秒</option>
+        <option value="20" selected>20 秒</option>
+        <option value="30">30 秒</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">📚 出題範圍</span>
+      <select class="setting-select" id="deck-range">
+        <option value="all" selected>兩冊合併（165 題）</option>
+        <option value="vol1">第一冊（75 題）</option>
+        <option value="vol2">第二冊（90 題）</option>
+      </select>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;padding:13px;font-size:1rem;">開始測驗 →</button>
+  </div>
+</div>
+
+<!-- Quiz -->
+<div id="quiz-screen">
+  <div class="top-bar">
+    <span class="q-counter" id="q-counter">1 / 20</span>
+    <div class="progress-track"><div class="progress-fill" id="q-prog" style="width:0%"></div></div>
+    <span class="score-badge" id="score-badge">得分 0</span>
+    <span class="timer-badge" id="timer-badge" style="display:none">⏱ 20s</span>
+  </div>
+  <div class="q-card">
+    <div class="q-num" id="q-num">題目 1</div>
+    <div class="q-text" id="q-text"></div>
+  </div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">下一題 →</button>
+</div>
+
+<!-- Result -->
+<div id="result-screen">
+  <div class="result-card">
+    <div class="result-icon" id="r-icon">🏆</div>
+    <div class="result-pct" id="r-pct">0%</div>
+    <div class="result-title" id="r-title">測驗完成！</div>
+    <div class="result-sub" id="r-sub"></div>
+    <div class="result-stats">
+      <div class="rstat"><div class="rstat-num g" id="r-correct">0</div><div class="rstat-label">答對</div></div>
+      <div class="rstat"><div class="rstat-num r" id="r-wrong">0</div><div class="rstat-label">答錯</div></div>
+      <div class="rstat"><div class="rstat-num b" id="r-score">0</div><div class="rstat-label">總分</div></div>
+    </div>
+    <div class="result-btns">
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ 再測一次</button>
+      <button class="btn" onclick="showReview()" id="review-btn">📋 查看錯題</button>
+      <button class="btn" onclick="goHome()">⚙ 重新設定</button>
+    </div>
+    <div class="review-section" id="review-section" style="display:none">
+      <div class="review-title">❌ 答錯的題目</div>
+      <div id="review-list"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const VOL1 = [
+  ["「無障礙通關環境」的英文詞彙為何？","A Barrier-free Customs Clearance Environment","A Duty-free Zone","A Non-restricted Trade Area","A Simplified Clearance System"],
+  ["Ad Valorem Duty 指的是哪一種稅制？","從價稅","從量稅","固定稅率","最惠國稅率"],
+  ["「行政救濟」的英文對應詞彙為何？","Administrative Remedy","Legal Protest","Customs Appeal","Tax Objection"],
+  ["「補稅金額」的英文稱為？","Amount of Duty to be Recovered","Customs Penalty Fee","Tax Surcharge Amount","Duty Supplement"],
+  ["「貨品暫准通關證」在國際上通常簡稱為？","A.T.A. Carnet","Customs Bond","Temporary Permit","Import License"],
+  ["Istanbul Convention 的中文名稱為何？","伊斯坦堡公約","京都公約","茂物公約","新加坡公約"],
+  ["「提貨單」的英文詞彙為何？","Bill of Lading","Packing List","Invoice","Delivery Order"],
+  ["「原產地證明書」的英文詞彙為何？","Certificate of Origin","Certificate of Quality","Trade License","Export Permit"],
+  ["Consignee 在關務中指的是什麼角色？","收貨人","發貨人","報關行","船長"],
+  ["「按月彙總繳納稅費」的英文表述為何？","Consolidated Payment of Duties on a Monthly Basis","Monthly Customs Declaration","Periodic Tax Settlement","Regular Duty Remittance"],
+  ["Customs Broker 在中文關務環境中是指什麼？","報關行","海關官員","貨運代理","倉儲業者"],
+  ["「關稅完稅價格」的英文詞彙為何？","Customs Taxable Value","Customs Duty Rate","Import Assessed Value","Transaction Tax Base"],
+  ["De Minimis Shipment Value 是指什麼？","低於此價值通常免稅的微量價值","最高免稅額度","最低申報金額","小額貨物定義"],
+  ["「先放後稅」的通關方式英文稱為？","Post-release Duty Payment","Pre-clearance Tax","Advance Duty Filing","Release Before Assessment"],
+  ["EDI 在通關業務中代表什麼技術？","電子資料交換","電子海關申報","數位簽章","電子發票"],
+  ["HS Code 的全稱為何？","The Harmonized Commodity Description and Coding System","The Harmonized Standard Classification System","The International Trade Coding System","The Customs Nomenclature System"],
+  ["「進口貨物艙單」的英文詞彙為何？","Import Cargo Manifest","Cargo Delivery List","Import Declaration Form","Vessel Loading Record"],
+  ["Inbound Vessel 指的是什麼？","進口船隻","出口船隻","停靠船隻","保稅船隻"],
+  ["「通關方式」的英文對應詞彙為何？","Mode of Clearance","Customs Channel","Clearance Category","Declaration Method"],
+  ["「裝箱單」的英文詞彙為何？","Packing List","Bill of Lading","Commercial Invoice","Shipping Order"],
+  ["「商港服務費」的英文詞彙為何？","Commercial Port Dues","Port Service Tax","Harbor Handling Fee","Vessel Landing Charge"],
+  ["「實名認證」的英文為？","Real Name Authentication","Identity Verification","Passport Confirmation","Personal ID Check"],
+  ["「無商業價值樣品」的英文縮寫為何？","N.C.V. (No Commercial Value)","F.O.C. (Free of Charge)","S.O.C. (Sample of Commerce)","N.T.S. (Non-Trade Sample)"],
+  ["關稅稅則中「章 (Chapter)」的英文為何？","Chapters","Sections","Headings","Sub-headings"],
+  ["「關稅配額」的英文詞彙為何？","Tariff Quotas","Import Restrictions","Customs Ceiling","Duty Limits"],
+  ["「三角貿易」的英文詞彙為何？","Triangular Trade","Transit Trade","Re-export Trade","Indirect Trade"],
+  ["「查緝走私」的英文為何？","Anti-smuggling Operation","Customs Enforcement","Border Control Action","Illegal Trade Crackdown"],
+  ["「沒入」在關務處分中的英文為何？","Confiscation / Forfeiture","Detention","Seizure","Penalty"],
+  ["「智慧財產權」的縮寫為何？","IPR","IPC","TIP","PIR"],
+  ["「緝獲」在查緝業務中的英文為何？","Seizure","Confiscation","Detention","Interception"],
+  ["「後送行李」的英文詞彙為何？","Unaccompanied Baggage","Delayed Luggage","Transit Baggage","Personal Effects"],
+  ["「計算價格」的英文詞彙為何？","Computed Value","Calculated Price","Assessed Value","Estimated Cost"],
+  ["「權利金及報酬」在估價時稱為？","Royalties and License Fees","Commissions and Brokerage","Patent Payments","Brand Usage Fees"],
+  ["「事後稽核制度」的英文詞彙為何？","Post-clearance Audit System","After-import Review","Customs Follow-up System","Retrospective Duty Check"],
+  ["「自主管理」的英文詞彙為何？","Autonomous Management","Self-regulation","Independent Oversight","Internal Compliance"],
+  ["「除帳」在保稅帳務中的英文為何？","Account Write-off","Stock Clearance","Bonded Deduction","Inventory Adjustment"],
+  ["「自由貿易港區」的英文名稱為何？","Free Trade Zone","Export Processing Zone","Special Economic Zone","Bonded Industrial Zone"],
+  ["「退稅」在出口退稅業務中的英文為何？","Duty Drawback","Tax Refund","Export Incentive","Customs Rebate"],
+  ["「反傾銷稅」的英文詞彙為何？","Anti-dumping Duty","Countervailing Duty","Safeguard Duty","Retaliatory Tariff"],
+  ["CIF 的全稱為何？","Cost, Insurance, and Freight","Cargo, Insurance, and Fee","Cost, Import, and Freight","Carriage, Insurance, and Fee"],
+  ["FOB 的全稱為何？","Free on Board","Freight on Board","Free of Billing","Forward on Board"],
+  ["「落日檢討」在反傾銷法規中的英文為何？","Sunset Review","Final Review","Termination Assessment","Expiry Evaluation"],
+  ["「平衡稅」的英文為何？","Countervailing Duty","Anti-dumping Duty","Compensatory Tax","Equalization Fee"],
+  ["Bogor Goals 是 APEC 的重要里程碑，中文稱為？","茂物目標","峇里目標","雅加達目標","曼谷目標"],
+  ["「最惠國待遇」的英文及縮寫為何？","Most-Favored-Nation Treatment (MFN)","Normal Trade Relations (NTR)","Preferential Trade Status (PTS)","Equal Trading Rights (ETR)"],
+  ["「貿易便捷化協定」的英文縮寫為何？","TFA","TLA","FTA","TDA"],
+  ["CMAA 代表什麼協定？","Customs Mutual Assistance Agreement","Common Market Access Agreement","Cross-border Management Action Agreement","Customs Member Association Agreement"],
+  ["「單一窗口」的英文詞彙為何？","Single Window","One-stop Service","Unified Portal","Central System"],
+  ["「境內關外」的英文為何？","Within National Territory but Outside Customs Territory","Inside Customs but Outside Country","Free Port Area","Bonded Territory"],
+  ["「無紙化通關」的英文詞彙為何？","Paperless Measures on Import/Export Clearance","Digital Customs Declaration","Electronic Filing System","E-clearance Procedure"],
+];
+
+const VOL2 = [
+  ["Contraband 的中文意義為何？","違禁品","走私品","管制品","仿冒品"],
+  ["「經認證經濟業者」的英文縮寫為何？","AEO","CEO","WCO","TFA"],
+  ["對來自成員國進口貨物不課徵關稅的協定稱為？","Free Trade Agreement","Customs Union Agreement","Trade Preference Pact","Tariff Exemption Treaty"],
+  ["「卸貨港」的英文名稱為何？","Port of discharge","Port of loading","Port of origin","Port of transit"],
+  ["下列何種物品「不得」存放於保稅倉庫？","管制藥品","船用補給品","展覽貨物","機器設備"],
+  ["入境台灣旅客攜帶供家用的酒類免稅數量最高為多少？","1公升","2公升","3公升","5公升"],
+  ["入境旅客攜帶酒類的「最高」限額（含應稅）為多少？","5公升","3公升","2公升","10公升"],
+  ["ATA 單證冊允許貨物免稅暫時入境的期限最長為多久？","一年","六個月","三個月","兩年"],
+  ["展覽貨物如於進口之日起多久時間內復出口，得符合關稅豁免資格？","6個月","3個月","1年","2年"],
+  ["實施何種制度可讓預定數量的產品以低於正常稅率的稅率進口？","Tariff quota（關稅配額）","Import permit（進口許可）","Duty suspension（暫停課稅）","Trade quota（貿易配額）"],
+  ["年滿20歲旅客入境台灣可攜帶免稅雪茄的數量上限為何？","25支","50支","10支","100支"],
+  ["入境旅客攜帶樣品完稅價格不超過多少元時得免徵關稅？","NT$12,000","NT$20,000","NT$5,000","NT$50,000"],
+  ["「智慧財產權」的英文縮寫為何？","IPR","IPC","IPO","TIP"],
+  ["從價稅進口貨物的完稅價格通常以何種價格為計算基礎？","Transaction value（交易價格）","FOB value","CIF value","Computed value"],
+  ["海關估價中的「identical goods」是指在哪些方面均相同的貨物？","產地、物理特性、商譽及品質","價格、重量、原料及顏色","包裝、數量、規格及品牌","來源、成分、用途及標準"],
+  ["「權利金」的英文單字為何？","Royalties","Commissions","Fees","Surcharges"],
+  ["HS 號碼的前幾位數字是所有使用該制度的國家的通用識別碼？","6位","4位","8位","10位"],
+  ["進口地海關應於進口申報日起多久期限內完成原產地的認定？","三個月","六個月","一個月","一年"],
+  ["哪種 Incoterms 2020 條件規定賣方必須辦理進口通關並支付關稅？","DDP","DAP","CIF","FOB"],
+  ["在 FOB 條件下，賣方將貨物置於何處即視為完成交貨義務？","On board the vessel（船舶上）","At the port gate（港口閘口）","In the warehouse（倉庫中）","At the buyer's door（買方門口）"],
+  ["快遞貨物通關規定中，單件貨物的毛重限制為多少公斤？","70公斤","50公斤","100公斤","30公斤"],
+  ["若欲進口含有藥物或有毒藥品的化妝品，應向哪個機關申請許可？","衛生福利部 (MOHW)","財政部關務署","經濟部","農業部"],
+  ["「洗錢」的英文單字為何？","Money laundering","Cash conversion","Fund transfer","Asset hiding"],
+  ["「Carbon Border Adjustment Mechanism」的縮寫為何？","CBAM","CCAM","CBAR","CBMA"],
+  ["歐盟進口商須以何種頻率申報進口貨物中的內含碳排放量？","On a quarterly basis（每季）","On a monthly basis（每月）","On an annual basis（每年）","On a weekly basis（每週）"],
+  ["當農產品累積進口量超過觸發數量時，海關可加徵額外關稅的措施稱為？","Special safeguard measures（特別防衛措施）","Emergency tariff（緊急關稅）","Import surcharge（進口附加稅）","Anti-dumping duty（反傾銷稅）"],
+  ["海關緝私條例規定，緝私執行的水域範圍為離岸多少海浬以內？","12海浬","24海浬","6海浬","200海浬"],
+  ["自非洲豬瘟疫區攜帶豬肉製品入境，首次違規的罰款金額是多少？","新台幣20萬元","新台幣5萬元","新台幣50萬元","新台幣10萬元"],
+  ["旅客攜帶新台幣現金入境，超過多少金額時必須向海關申報？","新台幣100,000元","新台幣50,000元","新台幣200,000元","新台幣30,000元"],
+  ["「關港貿單一窗口」的英文縮寫為何？","CPT Single Window","CTP Single Window","PCT Single Window","TCG Single Window"],
+  ["報關行受委託辦理業務時，應提示何種法律文件以確立委任關係？","Power of attorney（委任書）","Business license（營業執照）","Customs bond（海關保證金）","Trade certificate（貿易憑證）"],
+  ["海關事後稽查通知應於進出口放行之翌日起幾個月內發出？","6個月","3個月","12個月","1個月"],
+  ["「預先稅則分類裁定」的英文術語為何？","Advance tariff classification ruling","Pre-import HS determination","Prior customs classification","Early tariff assessment"],
+  ["De minimis 的中文意義為何？","微量；最低限額","最大免稅額","最小申報額","免稅門檻"],
+  ["「Customs clearance procedure」的中文意義為何？","海關通關程序","關稅減免手續","報關申請流程","貨物驗放程序"],
+  ["Dumping 的中文意義為何？","傾銷","走私","非法出口","仿冒貿易"],
+  ["「貿易便利化」的英文為何？","Trade facilitation","Trade liberalization","Trade simplification","Trade deregulation"],
+  ["WTO 的全稱為何？","World Trade Organization","World Tariff Organization","World Trade Office","World Treaty Organization"],
+  ["WCO 的全稱為何？","World Customs Organization","World Commerce Organization","World Clearance Office","World Cargo Organization"],
+  ["「完稅價格」的英文術語為何？","Customs value","Tax base","Duty assessment","Import price"],
+  ["原產地認定標準中的「Wholly produced」是指什麼？","完全在一國生產","主要在一國生產","部分在一國生產","最終加工在一國"],
+  ["在 Incoterms 2020 中，FAS 代表什麼？","Free Alongside Ship（船邊交貨）","Free at Shore（岸邊交貨）","Freight at Ship（船上運費）","Forward at Sea（海上遞送）"],
+  ["「Illicit trade」的中文意義為何？","非法貿易","不正當貿易","受限貿易","禁止貿易"],
+  ["「Reciprocal treatment」在關稅法中代表何種待遇？","互惠待遇","特別優惠待遇","最惠國待遇","普遍優惠待遇"],
+  ["旅客在旅途中合理需要供個人使用的物品稱為？","Personal effects（個人隨身物品）","Tourist goods（旅遊貨品）","Duty-free items（免稅物品）","Accompanied goods（隨身攜帶物品）"],
+  ["為防止外來疾病傳入，進口動植物必須接受的程序稱為？","Quarantine（檢疫）","Inspection（查驗）","Fumigation（燻蒸）","Certification（認證）"],
+  ["「Authorized Economic Operator (AEO)」的中文意義為何？","經認證經濟業者","授權進出口業者","核准貿易商","認可關務業者"],
+  ["旅客攜帶應稅貨物超過免稅限額時，應經由哪種通道向海關申報？","Red Channel（紅色通道）","Green Channel（綠色通道）","Blue Channel（藍色通道）","Yellow Channel（黃色通道）"],
+  ["「Provisional anti-dumping duty」是指何種性質的反傾銷稅？","臨時性反傾銷稅","最終反傾銷稅","緊急反傾銷稅","預防性反傾銷稅"],
+  ["Transaction Value of Identical Goods 代表什麼意思？","同樣貨物之交易價格","相似貨物之市場價格","計算價格法","倒扣價格法"],
+  ["「自由貿易港區」的英文名稱為何？","Free Trade Zone","Export Processing Zone","Special Economic Area","Customs Free Port"],
+];
+
+let allCards = [];
+let quizDeck = [];
+let currentQ = 0;
+let score = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let timeLimit = 20;
+let timer = null;
+let timeLeft = 0;
+let answered = false;
+let wrongItems = [];
+let totalQ = 20;
+
+function buildDeck(range) {
+  if (range === 'vol1') return [...VOL1];
+  if (range === 'vol2') return [...VOL2];
+  return [...VOL1, ...VOL2];
+}
+
+function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+function startQuiz() {
+  totalQ = parseInt(document.getElementById('q-count').value);
+  timeLimit = parseInt(document.getElementById('time-limit').value);
+  const range = document.getElementById('deck-range').value;
+  allCards = shuffle(buildDeck(range));
+  quizDeck = allCards.slice(0, Math.min(totalQ, allCards.length));
+  currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; wrongItems = [];
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  document.getElementById('result-screen').style.display = 'none';
+  if (timeLimit > 0) document.getElementById('timer-badge').style.display = 'inline-block';
+  else document.getElementById('timer-badge').style.display = 'none';
+  showQuestion();
+}
+
+function showQuestion() {
+  if (currentQ >= quizDeck.length) { showResult(); return; }
+  answered = false;
+  const q = quizDeck[currentQ];
+  document.getElementById('q-num').textContent = '題目 ' + (currentQ + 1);
+  document.getElementById('q-text').textContent = q[0];
+  document.getElementById('q-counter').textContent = (currentQ + 1) + ' / ' + quizDeck.length;
+  document.getElementById('q-prog').style.width = Math.round((currentQ / quizDeck.length) * 100) + '%';
+  document.getElementById('score-badge').textContent = '得分 ' + score;
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+
+  // Build options: index 1=correct, 2-4=wrong
+  const opts = [
+    {text: q[1], correct: true},
+    {text: q[2], correct: false},
+    {text: q[3], correct: false},
+    {text: q[4], correct: false},
+  ];
+  shuffle(opts);
+
+  const labels = ['A', 'B', 'C', 'D'];
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+  opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-label">${labels[i]}</span><span>${opt.text}</span>`;
+    btn.dataset.correct = opt.correct;
+    btn.onclick = () => selectAnswer(btn, opt.correct, q[1]);
+    container.appendChild(btn);
+  });
+
+  if (timeLimit > 0) startTimer();
+}
+
+function startTimer() {
+  clearInterval(timer);
+  timeLeft = timeLimit;
+  updateTimerBadge();
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimerBadge();
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      if (!answered) timeUp();
+    }
+  }, 1000);
+}
+
+function updateTimerBadge() {
+  const el = document.getElementById('timer-badge');
+  el.textContent = '⏱ ' + timeLeft + 's';
+  el.className = 'timer-badge' + (timeLeft <= 5 ? ' danger' : timeLeft <= 10 ? ' warning' : '');
+}
+
+function timeUp() {
+  answered = true;
+  const correct = quizDeck[currentQ][1];
+  document.querySelectorAll('.opt').forEach(btn => {
+    if (btn.dataset.correct === 'true') btn.classList.add('show-correct');
+    btn.onclick = null;
+  });
+  wrongCount++;
+  wrongItems.push({q: quizDeck[currentQ][0], a: correct, yours: '（超時未答）', correct: false});
+  showFeedback(false, correct, '（超時）');
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function selectAnswer(btn, isCorrect, correctAns) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timer);
+  document.querySelectorAll('.opt').forEach(b => { b.onclick = null; });
+  if (isCorrect) {
+    btn.classList.add('correct');
+    score += timeLimit > 0 ? Math.max(1, timeLeft) * 5 : 10;
+    correctCount++;
+    showFeedback(true, correctAns, btn.querySelector('span:last-child').textContent);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt').forEach(b => {
+      if (b.dataset.correct === 'true') b.classList.add('show-correct');
+    });
+    wrongCount++;
+    wrongItems.push({q: quizDeck[currentQ][0], a: correctAns, yours: btn.querySelector('span:last-child').textContent, correct: false});
+    showFeedback(false, correctAns, btn.querySelector('span:last-child').textContent);
+  }
+  document.getElementById('next-btn').style.display = 'block';
+  document.getElementById('score-badge').textContent = '得分 ' + score;
+}
+
+function showFeedback(isCorrect, correct, yours) {
+  const el = document.getElementById('feedback');
+  if (isCorrect) {
+    el.className = 'feedback correct';
+    el.textContent = '✓ 答對了！正確答案：' + correct;
+  } else {
+    el.className = 'feedback wrong';
+    el.textContent = '✕ 答錯了！正確答案：' + correct;
+  }
+  el.style.display = 'block';
+}
+
+function nextQuestion() {
+  currentQ++;
+  showQuestion();
+}
+
+function showResult() {
+  clearInterval(timer);
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+  const pct = Math.round((correctCount / quizDeck.length) * 100);
+  document.getElementById('r-pct').textContent = pct + '%';
+  document.getElementById('r-icon').textContent = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '💪';
+  document.getElementById('r-title').textContent = pct >= 80 ? '優秀！' : pct >= 60 ? '不錯！' : '繼續加油！';
+  document.getElementById('r-sub').innerHTML = `答對 ${correctCount} 題・答錯 ${wrongCount} 題・共 ${quizDeck.length} 題`;
+  document.getElementById('r-correct').textContent = correctCount;
+  document.getElementById('r-wrong').textContent = wrongCount;
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('review-btn').style.display = wrongItems.length ? 'inline-flex' : 'none';
+  document.getElementById('review-section').style.display = 'none';
+  document.getElementById('q-prog').style.width = '100%';
+}
+
+function showReview() {
+  const sec = document.getElementById('review-section');
+  if (sec.style.display === 'block') { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  wrongItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'review-item wrong';
+    div.innerHTML = `<div class="review-q">${item.q}</div><div class="review-a">✓ ${item.a}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function restartQuiz() {
+  document.getElementById('result-screen').style.display = 'none';
+  quizDeck = shuffle([...allCards]).slice(0, totalQ);
+  currentQ = 0; score = 0; correctCount = 0; wrongCount = 0; wrongItems = [];
+  document.getElementById('quiz-screen').style.display = 'block';
+  if (timeLimit > 0) document.getElementById('timer-badge').style.display = 'inline-block';
+  showQuestion();
+}
+
+function goHome() {
+  clearInterval(timer);
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('start-screen').style.display = 'block';
+}
+</script>
+</body>
+</html>
